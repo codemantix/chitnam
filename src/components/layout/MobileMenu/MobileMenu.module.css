@@ -1,0 +1,84 @@
+.toggle {
+  color: var(--ink-900);
+  background-color: var(--sand-100);
+  border-radius: var(--radius-sm);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.toggle:hover {
+  background-color: var(--brand-50);
+}
+
+.dialog {
+  /* Full-screen sheet; reset the UA dialog box. */
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background-color: var(--paper);
+  color: var(--ink-900);
+  overflow-y: auto;
+}
+
+.dialog::backdrop {
+  background-color: transparent;
+}
+
+.dialog[open] {
+  animation: sheet-in var(--duration-base) var(--ease-out);
+}
+
+/* Links slide in one after another; --i is set inline per item. */
+.dialog[open] .item {
+  animation: item-in var(--duration-slow) var(--ease-out) both;
+  animation-delay: calc(var(--i) * 35ms + 60ms);
+}
+
+.item + .item {
+  margin-top: 0.25rem;
+}
+
+.link {
+  padding-inline: 1rem;
+  font-family: var(--font-body);
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.3;
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.link:hover {
+  background-color: var(--sand-100);
+}
+
+.active,
+.active:hover {
+  color: var(--brand-800);
+  background-color: var(--brand-50);
+}
+
+.active::after {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: var(--brand-600);
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes item-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}

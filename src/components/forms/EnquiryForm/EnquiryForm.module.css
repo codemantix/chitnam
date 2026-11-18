@@ -1,0 +1,25 @@
+/* Visually and programmatically hidden, but present for bots to fill. */
+.honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.success {
+  background-color: var(--success-50);
+  border: 1px solid rgb(23 177 86 / 0.25);
+  border-radius: var(--radius-lg);
+}
+
+.success:focus {
+  outline: none;
+}
+
+.successTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: 600;
+  color: var(--ink-900);
+}

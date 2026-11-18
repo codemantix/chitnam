@@ -1,0 +1,88 @@
+.dialog {
+  width: calc(100% - 2rem);
+  max-height: calc(100vh - 2rem);
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 24px;
+  background-color: #fff;
+  color: var(--ink-900);
+  box-shadow: 0 30px 80px -20px rgb(16 24 20 / 0.35);
+  overflow: hidden;
+}
+
+.dialog::backdrop {
+  background-color: rgb(21 24 27 / 0.45);
+  backdrop-filter: blur(3px);
+}
+
+.dialog[open] {
+  animation: pop var(--duration-base) var(--ease-out);
+}
+
+.sm {
+  max-width: 28rem;
+}
+
+.md {
+  max-width: 36rem;
+}
+
+.xl {
+  max-width: 68rem;
+  height: calc(100vh - 2rem);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: calc(100vh - 2rem);
+}
+
+.header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #eef0eb;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.close {
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  color: var(--ink-600);
+  background-color: #f3f5f0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: var(--ink-900);
+  background-color: #e8ebe4;
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.footer {
+  padding: 1rem 1.5rem;
+  background-color: #f7f8f5;
+  border-top: 1px solid #eef0eb;
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}

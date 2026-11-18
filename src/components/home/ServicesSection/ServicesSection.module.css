@@ -1,0 +1,48 @@
+.eyebrow {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brand-700);
+}
+
+.heading {
+  max-width: 18ch;
+  font-size: var(--text-h2);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+/* Vertical green rule between heading and intro, as on the original site. */
+.divider {
+  display: none;
+  width: 3px;
+  height: 5.5rem;
+  background-color: var(--brand-600);
+  border-radius: 3px;
+}
+
+@media (min-width: 768px) {
+  .divider {
+    display: block;
+  }
+}
+
+/* Light grey wash behind the cards, like the original card strip. */
+.cards {
+  position: relative;
+}
+
+.cards::before {
+  content: "";
+  position: absolute;
+  inset: 18% -0.75rem -1.25rem;
+  z-index: 0;
+  background-color: var(--sand-100);
+  border-radius: var(--radius-xl);
+}
+
+.cards > * {
+  position: relative;
+  z-index: 1;
+}

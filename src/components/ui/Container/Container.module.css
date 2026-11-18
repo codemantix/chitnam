@@ -1,0 +1,16 @@
+.container {
+  padding-inline: var(--gutter);
+}
+
+.default {
+  max-width: var(--container-max);
+}
+
+.narrow {
+  max-width: var(--container-narrow);
+}
+
+/* Wide: lets editorial images run a little past the text column on large screens. */
+.wide {
+  max-width: calc(var(--container-max) + 8rem);
+}

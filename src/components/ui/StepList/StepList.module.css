@@ -1,0 +1,57 @@
+.steps {
+  list-style: none;
+}
+
+.marker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--brand-600);
+  border-radius: 50%;
+  background-color: var(--paper);
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--brand-700);
+  transition:
+    background-color var(--duration-base) var(--ease-out),
+    color var(--duration-base) var(--ease-out);
+}
+
+.step:hover .marker {
+  background-color: var(--brand-700);
+  color: var(--white);
+}
+
+/* Vertical connector between markers. Gap between steps is 2.5rem. */
+.step:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  top: 2.5rem;
+  bottom: -2.5rem;
+  left: calc(1.25rem - 0.5px);
+  width: 1px;
+  background-color: var(--ink-200);
+}
+
+/* Horizontal layout: connector runs across on large screens. */
+@media (min-width: 1024px) {
+  .horizontal .step:not(:last-child)::before {
+    top: calc(1.25rem - 0.5px);
+    bottom: auto;
+    left: 2.5rem;
+    right: -2rem;
+    width: auto;
+    height: 1px;
+  }
+}
+
+.title {
+  font-size: 1.125rem;
+  line-height: var(--leading-snug);
+}

@@ -1,0 +1,121 @@
+/* Each question is its own soft card. */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.item {
+  padding-inline: 1.25rem;
+  background-color: var(--white);
+  border: var(--border-soft);
+  border-radius: var(--radius-md);
+  box-shadow: 0 1px 2px rgb(16 24 20 / 0.03);
+  transition:
+    border-color var(--duration-base) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out);
+}
+
+.item:hover {
+  border-color: rgb(23 177 86 / 0.25);
+}
+
+.item[open] {
+  border-color: rgb(23 177 86 / 0.3);
+  box-shadow: var(--shadow-card);
+}
+
+@media (min-width: 640px) {
+  .item {
+    padding-inline: 1.5rem;
+  }
+}
+
+.summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.summary::-webkit-details-marker {
+  display: none;
+}
+
+.summary:focus-visible {
+  outline-offset: 6px;
+  border-radius: var(--radius-sm);
+}
+
+.question {
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: 0;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.summary:hover .question {
+  color: var(--brand-700);
+}
+
+/* Plus sign in a soft circle; the vertical bar rotates away when open. */
+.icon {
+  position: relative;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  margin-top: -0.125rem;
+  background-color: var(--brand-50);
+  border-radius: var(--radius-pill);
+  transition: background-color var(--duration-base) var(--ease-out);
+}
+
+.icon::before,
+.icon::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0.75rem;
+  height: 1.5px;
+  margin: -0.75px 0 0 -0.375rem;
+  background-color: var(--brand-700);
+  border-radius: 2px;
+  transition:
+    transform var(--duration-base) var(--ease-out),
+    background-color var(--duration-base) var(--ease-out);
+}
+
+.icon::after {
+  transform: rotate(90deg);
+}
+
+.item[open] .icon {
+  background-color: var(--brand-700);
+}
+
+.item[open] .icon::before,
+.item[open] .icon::after {
+  background-color: var(--white);
+}
+
+.item[open] .icon::after {
+  transform: rotate(0deg);
+}
+
+.answer {
+  max-width: var(--measure);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .item[open] .answer {
+    animation: reveal var(--duration-base) var(--ease-out);
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}

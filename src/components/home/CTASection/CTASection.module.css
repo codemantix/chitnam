@@ -1,0 +1,29 @@
+/* Deep brand green with a faint diagonal texture; white text passes AA. */
+.band {
+  color: var(--white);
+  background:
+    repeating-linear-gradient(135deg, rgb(255 255 255 / 0.035) 0 2px, transparent 2px 14px),
+    var(--brand-700);
+}
+
+.heading {
+  font-size: clamp(1.625rem, 1.2rem + 1.8vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--white);
+}
+
+.text {
+  color: rgb(255 255 255 / 0.88);
+}
+
+.phone {
+  font-weight: 600;
+  color: var(--white);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.phone:hover {
+  text-decoration-thickness: 2px;
+}

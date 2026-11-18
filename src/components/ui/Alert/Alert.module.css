@@ -1,0 +1,30 @@
+.alert {
+  border-left: 3px solid currentColor;
+  /* Square on the public site; the admin sets --alert-radius for soft corners. */
+  border-radius: var(--alert-radius, 0);
+  color: var(--ink-900);
+}
+
+.alert:focus {
+  outline: none;
+}
+
+.error {
+  background-color: var(--error-50);
+  border-left-color: var(--error-700);
+}
+
+.success {
+  background-color: var(--success-50);
+  border-left-color: var(--success-700);
+}
+
+.info {
+  background-color: var(--sand-100);
+  border-left-color: var(--ink-600);
+}
+
+.warning {
+  background-color: var(--warning-50);
+  border-left-color: var(--warning-700);
+}

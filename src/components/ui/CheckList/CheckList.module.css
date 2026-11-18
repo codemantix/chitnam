@@ -1,0 +1,12 @@
+/* Tick drawn with two borders, aligned to the first line of text. */
+.item::before {
+  content: "";
+  position: absolute;
+  left: 0.125rem;
+  top: 0.45em;
+  width: 0.75rem;
+  height: 0.4375rem;
+  border-left: 2px solid var(--brand-600);
+  border-bottom: 2px solid var(--brand-600);
+  transform: rotate(-45deg);
+}

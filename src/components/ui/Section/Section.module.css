@@ -1,0 +1,30 @@
+.spacingDefault {
+  padding-block: var(--space-section);
+}
+
+.spacingTight {
+  padding-block: var(--space-section-tight);
+}
+
+.paper {
+  background-color: var(--paper);
+}
+
+.sand {
+  background-color: var(--sand-100);
+}
+
+.brand {
+  background-color: var(--brand-50);
+}
+
+/* Dark tone: re-point text tokens so child components stay readable. */
+.ink {
+  background-color: var(--ink-fixed);
+  color: var(--paper);
+  --ink-900: #ffffff;
+  --ink-700: #d9dcdf;
+  --ink-600: #b8bec4;
+  --ink-200: #3a4046;
+  --brand-700: #5fd38f;
+}

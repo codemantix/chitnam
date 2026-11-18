@@ -1,0 +1,55 @@
+.banner {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  min-height: clamp(16rem, 12rem + 14vw, 24rem);
+  overflow: hidden;
+  background-color: var(--ink-fixed);
+  color: var(--white);
+  /* Shared components inside the banner read these tokens. */
+  --ink-900: #ffffff;
+  --ink-600: rgb(255 255 255 / 0.82);
+  --ink-400: rgb(255 255 255 / 0.6);
+}
+
+.image {
+  z-index: -2;
+  object-fit: cover;
+}
+
+/* Dark, slightly green-tinted overlay so white text always reads clearly. */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(180deg, rgb(10 20 15 / 0.55) 0%, rgb(10 20 15 / 0.7) 100%);
+}
+
+.eyebrow {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8de4b0;
+}
+
+.title {
+  max-width: 22ch;
+  font-size: clamp(2rem, 1.4rem + 3vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--white);
+  text-shadow: 0 2px 24px rgb(0 0 0 / 0.25);
+}
+
+.breadcrumb {
+  font-size: 0.875rem;
+}
+
+.lead {
+  font-size: var(--text-lead);
+  line-height: 1.6;
+  color: rgb(255 255 255 / 0.88);
+}

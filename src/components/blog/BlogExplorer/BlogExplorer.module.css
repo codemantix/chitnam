@@ -1,0 +1,51 @@
+.chip {
+  min-height: 2.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ink-700);
+  border: var(--border-hairline);
+  border-radius: 999px;
+  background-color: var(--white);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.chip:hover {
+  border-color: var(--ink-700);
+  color: var(--ink-900);
+}
+
+.chipActive,
+.chipActive:hover {
+  background-color: var(--ink-900);
+  border-color: var(--ink-900);
+  color: var(--paper);
+}
+
+.search {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.625rem 0.875rem 0.625rem 2.5rem;
+  font-size: 1rem;
+  border: 1px solid #9aa1a8;
+  border-radius: var(--radius-pill);
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 16 16'%3E%3Ccircle cx='7' cy='7' r='5' stroke='%234b535b' stroke-width='1.5'/%3E%3Cpath stroke='%234b535b' stroke-linecap='round' stroke-width='1.5' d='m11 11 3 3'/%3E%3C/svg%3E")
+      no-repeat 0.875rem center,
+    var(--white);
+}
+
+.search:focus-visible {
+  outline: none;
+  border-color: var(--brand-700);
+  box-shadow: 0 0 0 3px var(--brand-100);
+}
+
+.empty {
+  background-color: var(--sand-100);
+  border-radius: var(--radius-lg);
+}

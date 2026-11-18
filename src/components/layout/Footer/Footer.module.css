@@ -1,0 +1,92 @@
+.footer {
+  background-color: #111315;
+  color: #e6e8ea;
+}
+
+/* The logo has dark lettering, so it sits on a small white plate. */
+.logoPlate {
+  display: inline-flex;
+  padding: 0.625rem 0.875rem;
+  background-color: var(--white);
+  border-radius: var(--radius-md);
+}
+
+.muted {
+  max-width: 22rem;
+  line-height: 1.7;
+  color: #b9bec3;
+}
+
+.readMore {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.8125rem;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.link {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  color: #d4d8dc;
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.link:hover {
+  color: var(--white);
+}
+
+.link:hover .chevron {
+  transform: translateX(2px);
+}
+
+.chevron {
+  flex-shrink: 0;
+  margin-top: 0.3rem;
+  color: var(--brand-500);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.contactRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  line-height: 1.6;
+}
+
+.contactIcon {
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+  color: var(--brand-500);
+}
+
+.bottom {
+  border-top: 1px solid #2a2e32;
+}
+
+.small {
+  font-size: 0.875rem;
+  color: #aab0b6;
+}
+
+.social {
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  color: var(--white);
+  background-color: var(--brand-700);
+  border-radius: var(--radius-sm);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.social:hover {
+  background-color: var(--brand-600);
+}

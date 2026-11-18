@@ -1,0 +1,114 @@
+/*
+ * Design tokens — the single source of truth.
+ *
+ * Tailwind reads these through `@theme inline` in globals.css, and CSS
+ * Modules use them directly with var(). Change a value here and both
+ * styling layers update together.
+ */
+
+:root {
+  /* Brand — derived from the Chitnam logo green (#17B156).
+     The logo green fails contrast for text (2.8:1 on white), so text,
+     links and buttons use 700 or darker. 700 is ≥5.1:1 on every surface it
+     sits on (paper 5.6, sand 5.1, brand-50 5.4, white-on-700 5.8) — WCAG AA
+     with margin. Re-check sand if you lighten it. */
+  --brand-50: #eef8f1;
+  --brand-100: #d5efdd;
+  --brand-200: #a9dfbb;
+  --brand-500: #1fbf60;
+  --brand-600: #17b156; /* logo green: marks, icons, rules */
+  --brand-700: #0b7536; /* text links, primary buttons */
+  --brand-800: #0b6631; /* hover / pressed */
+  --brand-900: #084a24;
+
+  /* Neutrals — slightly warm so photography sits naturally */
+  --ink-900: #15181b; /* headings, body */
+  --ink-700: #33393f;
+  --ink-600: #4b535b; /* secondary text, ≈7.4:1 on paper */
+  --ink-400: #8a929a; /* decorative only (3:1) — never for essential text */
+  --ink-200: #d7dbdf; /* borders, rules */
+  --ink-100: #eceee9;
+  --paper: #ffffff; /* page background (white, like the original site) */
+  --sand-100: #f4f6f4; /* alternate section background (cool light grey) */
+  --white: #ffffff;
+  /* Fixed dark ink. Unlike --ink-900, never re-pointed by dark sections,
+     so it's safe for text on light surfaces placed inside them. */
+  --ink-fixed: #15181b;
+
+  /* Feedback */
+  --success-700: #0b7536;
+  --success-50: #eef8f1;
+  --error-700: #b42318;
+  --error-50: #fef3f2;
+  --warning-700: #8a5a00;
+  --warning-50: #fff8e6;
+
+  /* Typography — families are injected by next/font in _app.js */
+  --font-display: var(--font-poppins), system-ui, -apple-system, "Segoe UI",
+    sans-serif;
+  --font-body: var(--font-inter), system-ui, -apple-system, "Segoe UI",
+    Roboto, sans-serif;
+
+  /* Fluid type scale (min at 320px → max at 1280px) */
+  /* Poppins is a wide geometric face, so headings run smaller than a serif would. */
+  --text-display: clamp(2.125rem, 1.5rem + 3.1vw, 3rem);
+  --text-h1: clamp(1.875rem, 1.45rem + 2.1vw, 3.25rem);
+  --text-h2: clamp(1.5rem, 1.25rem + 1.3vw, 2.375rem);
+  --text-h3: clamp(1.125rem, 1.05rem + 0.4vw, 1.3125rem);
+  --text-lead: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
+  --text-body: 1rem;
+  --text-small: 0.875rem;
+  --text-eyebrow: 0.75rem;
+
+  --leading-tight: 1.1;
+  --leading-snug: 1.25;
+  --leading-body: 1.65;
+  --tracking-display: -0.025em;
+  --tracking-eyebrow: 0.14em;
+  --measure: 65ch;
+
+  /* Spacing rhythm for sections (Tailwind's 4px scale covers the rest) */
+  --space-section: clamp(4rem, 2.5rem + 6vw, 8rem);
+  --space-section-tight: clamp(3rem, 2rem + 4vw, 5rem);
+  --gutter: clamp(1rem, 0.5rem + 2.5vw, 2rem);
+  --container-max: 80rem; /* 1280px */
+  --container-narrow: 48rem;
+  --header-height: 5.25rem;
+
+  /* Shape — soft, rounded corners throughout (no sharp edges) */
+  --radius-sm: 8px; /* buttons, inputs, small controls */
+  --radius-md: 12px; /* small cards, thumbnails */
+  --radius-lg: 16px; /* cards, photos */
+  --radius-xl: 20px; /* large imagery */
+  --radius-pill: 999px;
+  --alert-radius: 14px;
+  --border-hairline: 1px solid var(--ink-200);
+  --border-soft: 1px solid #e6e9e2;
+
+  /* Elevation — soft, diffuse shadows */
+  --shadow-raised: 0 1px 2px rgb(21 24 27 / 0.05),
+    0 12px 32px -16px rgb(21 24 27 / 0.18);
+  --shadow-card: 0 1px 2px rgb(16 24 20 / 0.04),
+    0 10px 30px -14px rgb(16 24 20 / 0.12);
+  --shadow-card-hover: 0 2px 4px rgb(16 24 20 / 0.05),
+    0 20px 44px -18px rgb(16 24 20 / 0.22);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 600ms;
+
+  /* Focus ring */
+  --focus-ring: 2px solid var(--brand-700);
+  --focus-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+  }
+}

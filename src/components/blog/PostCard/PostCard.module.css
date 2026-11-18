@@ -1,0 +1,66 @@
+.media {
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background-color: var(--sand-100);
+  border-radius: var(--radius-lg);
+  isolation: isolate;
+}
+
+.img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--duration-slow) var(--ease-out);
+}
+
+.card:hover .img {
+  transform: scale(1.03);
+}
+
+/* Typographic cover for posts without an image. */
+.placeholder {
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+  padding: 1.25rem;
+  background:
+    linear-gradient(var(--brand-600), var(--brand-600)) left 1.25rem top 1.25rem / 2rem 2px no-repeat,
+    var(--brand-50);
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--brand-800);
+}
+
+.title {
+  font-size: var(--text-h3);
+  line-height: var(--leading-snug);
+}
+
+.link {
+  text-decoration: none;
+}
+
+.link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.card:hover .link {
+  color: var(--brand-700);
+}
+
+.card:focus-within {
+  outline: var(--focus-ring);
+  outline-offset: 6px;
+  border-radius: var(--radius-lg);
+}
+
+.card:focus-within:not(:has(:focus-visible)) {
+  outline: none;
+}
+
+.link:focus-visible {
+  outline: none;
+}

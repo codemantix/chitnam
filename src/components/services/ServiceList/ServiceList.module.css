@@ -1,0 +1,41 @@
+.media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-xl);
+  box-shadow: 0 24px 50px -28px rgb(16 24 20 / 0.45);
+}
+
+.img {
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+/* Service icon in a green circle overlapping the photo's corner. */
+.badge {
+  position: absolute;
+  bottom: -1.25rem;
+  left: 1.5rem;
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  color: var(--white);
+  background-color: var(--brand-700);
+  border: 4px solid var(--white);
+  border-radius: 999px;
+  box-shadow: 0 10px 24px -10px rgb(11 117 54 / 0.6);
+}
+
+.number {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brand-700);
+}
+
+.title {
+  font-size: var(--text-h2);
+  font-weight: 700;
+  line-height: 1.15;
+}

@@ -1,0 +1,13 @@
+.heading {
+  font-size: var(--text-h2);
+}
+
+.panel {
+  background-color: var(--brand-50);
+  border: 1px solid rgb(23 177 86 / 0.15);
+  border-radius: var(--radius-lg);
+}
+
+.panelTitle {
+  font-size: var(--text-h3);
+}

@@ -1,0 +1,35 @@
+.wrapper {
+  max-width: 44rem;
+}
+
+/* Small green uppercase label above the heading, as on the original site. */
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brand-700);
+}
+
+.eyebrowCentered {
+  text-align: center;
+}
+
+.title {
+  font-size: var(--text-h2);
+  font-weight: 700;
+  line-height: var(--leading-tight);
+}
+
+.titleLarge {
+  font-size: var(--text-h1);
+  font-weight: 700;
+  line-height: var(--leading-tight);
+}
+
+.lead {
+  font-size: var(--text-lead);
+  line-height: 1.6;
+  max-width: var(--measure);
+}

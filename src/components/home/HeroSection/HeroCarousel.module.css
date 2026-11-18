@@ -1,0 +1,264 @@
+.carousel {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: clamp(34rem, 26rem + 22vw, 44rem);
+  padding-block: 5rem 6.5rem;
+  overflow: hidden;
+  background-color: var(--ink-fixed);
+  color: var(--white);
+  touch-action: pan-y;
+}
+
+/* ----- Photos ----- */
+
+.media {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.photo {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 900ms var(--ease-out);
+}
+
+.photoActive {
+  opacity: 1;
+}
+
+.photoDeferred {
+  display: none;
+}
+
+.img {
+  object-fit: cover;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .photoActive .img {
+    animation: settle 7000ms ease-out both;
+  }
+}
+
+@keyframes settle {
+  from {
+    transform: scale(1.06);
+  }
+}
+
+/* Dark overlay, a little heavier at the bottom where the tabs sit. */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(8 14 11 / 0.55) 0%, rgb(8 14 11 / 0.5) 50%, rgb(8 14 11 / 0.78) 100%);
+}
+
+/* ----- Copy ----- */
+
+.content {
+  z-index: 1;
+}
+
+.viewport {
+  display: grid;
+  width: 100%;
+  margin-top: 1.25rem;
+}
+
+.slide {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition:
+    opacity 180ms ease-in,
+    transform 180ms ease-in,
+    visibility 0s linear 180ms;
+}
+
+.slideActive {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity 500ms var(--ease-out) 160ms,
+    transform 500ms var(--ease-out) 160ms,
+    visibility 0s;
+}
+
+.headline {
+  max-width: 18ch;
+  font-size: clamp(2.25rem, 1.4rem + 4vw, 4.25rem);
+  font-weight: 700;
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  color: var(--white);
+  text-shadow: 0 2px 30px rgb(0 0 0 / 0.3);
+}
+
+.text {
+  max-width: 40rem;
+  font-size: var(--text-lead);
+  line-height: 1.6;
+  color: rgb(255 255 255 / 0.9);
+}
+
+/* ----- Arrows ----- */
+
+.arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  display: none;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  color: var(--white);
+  background-color: rgb(255 255 255 / 0.12);
+  border: 1px solid rgb(255 255 255 / 0.3);
+  border-radius: 999px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.arrow:hover {
+  background-color: var(--brand-700);
+  border-color: var(--brand-700);
+}
+
+.arrow:focus-visible {
+  outline-color: var(--white);
+}
+
+.arrowPrev {
+  left: 1.25rem;
+}
+
+.arrowNext {
+  right: 1.25rem;
+}
+
+@media (min-width: 900px) {
+  .arrow {
+    display: grid;
+  }
+}
+
+/* ----- Topic tabs ----- */
+
+.controls {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1.5rem;
+  z-index: 2;
+}
+
+.tablist {
+  display: flex;
+  gap: 0.25rem;
+  scrollbar-width: none;
+}
+
+.tablist::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  position: relative;
+  flex-shrink: 0;
+  padding: 0.625rem 0.875rem 0.875rem;
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgb(255 255 255 / 0.72);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.tab::before {
+  content: "";
+  position: absolute;
+  left: 0.875rem;
+  right: 0.875rem;
+  bottom: 0.375rem;
+  height: 2px;
+  background-color: rgb(255 255 255 / 0.28);
+  border-radius: 2px;
+}
+
+.tab:hover {
+  color: var(--white);
+}
+
+.tab:focus-visible {
+  outline-color: var(--white);
+}
+
+.tabActive {
+  color: var(--white);
+}
+
+.tabActive::after {
+  content: "";
+  position: absolute;
+  left: 0.875rem;
+  right: 0.875rem;
+  bottom: 0.375rem;
+  height: 2px;
+  background-color: var(--brand-500);
+  border-radius: 2px;
+}
+
+/* While autoplay runs, the active line fills over the slide duration. */
+.tabTiming::after {
+  transform-origin: left;
+  animation: fill var(--autoplay-ms) linear both;
+}
+
+@keyframes fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.pause {
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  color: var(--white);
+  border: 1px solid rgb(255 255 255 / 0.35);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.pause:hover {
+  background-color: rgb(255 255 255 / 0.15);
+}
+
+.pause:focus-visible {
+  outline-color: var(--white);
+}
+
+@media (max-width: 639px) {
+  .tablist {
+    mask-image: linear-gradient(to right, #000 82%, transparent);
+    -webkit-mask-image: linear-gradient(to right, #000 82%, transparent);
+  }
+}

@@ -1,0 +1,13 @@
+/* Styles for the dev-only /dev/foundation/ reference page. */
+
+.swatch {
+  display: block;
+  aspect-ratio: 4 / 3;
+  border: var(--border-hairline);
+  border-radius: var(--radius-md);
+}
+
+.inverseStrip {
+  background-color: var(--ink-900);
+  border-radius: var(--radius-lg);
+}

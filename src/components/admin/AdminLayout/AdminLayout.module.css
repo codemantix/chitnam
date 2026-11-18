@@ -1,0 +1,240 @@
+/*
+ * Admin design scope.
+ *
+ * Re-points shared tokens so components reused from the public site
+ * (Field, Button, Alert) become soft and rounded inside the admin only.
+ */
+.shell {
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --alert-radius: 14px;
+
+  --admin-bg: #f3f5f0;
+  --admin-surface: #ffffff;
+  --admin-border: #e5e9e1;
+  --admin-muted: #f7f8f5;
+  --admin-shadow: 0 1px 2px rgb(16 24 20 / 0.04), 0 10px 30px -14px rgb(16 24 20 / 0.12);
+  --admin-shadow-hover: 0 2px 4px rgb(16 24 20 / 0.05), 0 18px 40px -18px rgb(16 24 20 / 0.2);
+  --sidebar-width: 17rem;
+
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 400px at 100% -10%, rgb(23 177 86 / 0.06), transparent 60%),
+    var(--admin-bg);
+  color: var(--ink-900);
+}
+
+/* ---------------- Sidebar (desktop) ---------------- */
+
+.sidebar {
+  position: fixed;
+  inset: 0.75rem auto 0.75rem 0.75rem;
+  z-index: 30;
+  display: none;
+  width: var(--sidebar-width);
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.25rem 1rem;
+  background-color: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--admin-shadow);
+}
+
+@media (min-width: 1024px) {
+  .sidebar {
+    display: flex;
+  }
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.25rem 0.5rem;
+  text-decoration: none;
+}
+
+.badge {
+  padding: 0.1875rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brand-800);
+  background-color: var(--brand-50);
+  border-radius: 999px;
+}
+
+.navLabel {
+  padding: 0 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--ink-700);
+  text-decoration: none;
+  border-radius: 12px;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.navLink:hover {
+  background-color: var(--admin-muted);
+  color: var(--ink-900);
+}
+
+.navActive,
+.navActive:hover {
+  background-color: var(--brand-50);
+  color: var(--brand-800);
+}
+
+.navActive svg {
+  color: var(--brand-600);
+}
+
+.count {
+  margin-left: auto;
+  min-width: 1.5rem;
+  padding: 0.0625rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--white);
+  background-color: var(--brand-700);
+  border-radius: 999px;
+}
+
+/* User card at the bottom of the sidebar */
+.userCard {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: var(--admin-muted);
+  border-radius: 16px;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--white);
+  background: linear-gradient(135deg, var(--brand-600), var(--brand-800));
+  border-radius: 999px;
+}
+
+.iconButton {
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  color: var(--ink-600);
+  border-radius: 10px;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.iconButton:hover {
+  background-color: var(--white);
+  color: var(--ink-900);
+}
+
+/* ---------------- Top bar (mobile/tablet) ---------------- */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background-color: rgb(255 255 255 / 0.96);
+  border-bottom: 1px solid var(--admin-border);
+}
+
+@media (min-width: 1024px) {
+  .topbar {
+    display: none;
+  }
+}
+
+.mobileNav {
+  scrollbar-width: none;
+}
+
+.mobileNav::-webkit-scrollbar {
+  display: none;
+}
+
+.mobileLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ink-700);
+  text-decoration: none;
+  background-color: var(--admin-muted);
+  border-radius: 999px;
+}
+
+.mobileActive {
+  color: var(--brand-800);
+  background-color: var(--brand-50);
+}
+
+/* ---------------- Main ---------------- */
+
+.main {
+  padding: 1.5rem 1rem 3rem;
+}
+
+@media (min-width: 768px) {
+  .main {
+    padding: 2rem 2rem 4rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .main {
+    margin-left: calc(var(--sidebar-width) + 0.75rem);
+    padding: 2.25rem 2.5rem 4rem;
+  }
+}
+
+.inner {
+  max-width: 82rem;
+  margin-inline: auto;
+}
+
+.eyebrow {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--ink-600);
+}
+
+.title {
+  font-size: clamp(1.5rem, 1.25rem + 1vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}

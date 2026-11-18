@@ -1,0 +1,27 @@
+/* Circular portrait with a thin green ring, as on the original site. */
+.photo {
+  position: relative;
+  width: min(16rem, 70vw);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 999px;
+  box-shadow:
+    0 0 0 6px var(--white),
+    0 0 0 8px var(--brand-100),
+    0 20px 40px -24px rgb(16 24 20 / 0.45);
+}
+
+.img {
+  object-fit: cover;
+  object-position: 50% 20%;
+  transition: transform var(--duration-slow) var(--ease-out);
+}
+
+.photo:hover .img {
+  transform: scale(1.05);
+}
+
+.name {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
