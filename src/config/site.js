@@ -31,8 +31,10 @@ export const siteConfig = {
     height: 223,
     alt: "Chitnam Penguins Links Limited",
   },
-  // 1200×630 crop of the consultation photo, the size social networks expect.
-  defaultOgImage: { src: "/images/og-default.jpg", width: 1200, height: 630, alt: "Chitnam Penguins Links advisers at a consultation desk" },
+  // Link preview image (WhatsApp, Facebook, LinkedIn, X) for every page
+  // without its own image. Uncropped 3:2 photo; Facebook and X centre-crop
+  // it to about 1.91:1, which keeps the desk and advisers in frame.
+  defaultOgImage: { src: "/images/photos/team-consultation-desk.jpg", width: 1296, height: 864, alt: "Chitnam Penguins Links advisers at a consultation desk" },
 
   address: {
     verified: false,

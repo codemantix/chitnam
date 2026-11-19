@@ -564,3 +564,10 @@ Notes for the client:
   needs editing (or switch to single logos per institution).
 - New Zealand and the Netherlands appear here but not in the enquiry form's
   destination list (they fall under "Another country").
+
+### Link preview image (19 Nov 2026)
+
+At the client's request, the default Open Graph/Twitter image is now the
+original `team-consultation-desk.jpg` (1296×864) instead of a 1200×630 crop
+of it. The crop file `og-default.jpg` was deleted. Blog posts with a cover
+image still use their own.
