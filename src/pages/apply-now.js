@@ -4,13 +4,14 @@ import PageHeader from "@/components/ui/PageHeader/PageHeader";
 import Section from "@/components/ui/Section/Section";
 import SEO from "@/components/ui/SEO/SEO";
 import StepList from "@/components/ui/StepList/StepList";
-import { siteConfig } from "@/config/site";
+import { useBusiness } from "@/hooks/useBusiness";
 import { DESTINATION_OPTIONS, INTEREST_OPTIONS } from "@/constants/enquiry";
 import { ROUTES } from "@/constants/routes";
 import { crumbs } from "@/utils/breadcrumbs";
 import { cn } from "@/utils/cn";
 import { breadcrumbSchema } from "@/utils/schema";
 import styles from "@/styles/pages/Apply.module.css";
+import { withSiteSettings } from "@/lib/withSiteSettings";
 
 const BREADCRUMBS = crumbs({ label: "Apply now", href: ROUTES.apply });
 
@@ -29,9 +30,13 @@ function defaultsFromQuery(query) {
   };
 }
 
+// Adds the business details from /admin/settings/ (header, footer, contact blocks).
+export const getStaticProps = withSiteSettings();
+
 export default function ApplyPage() {
   const router = useRouter();
-  const phone = siteConfig.contact.phones[0];
+  const business = useBusiness();
+  const phone = business.phones[0];
 
   return (
     <>
@@ -74,8 +79,8 @@ export default function ApplyPage() {
                 {phone.display}
               </a>{" "}
               or email{" "}
-              <a href={`mailto:${siteConfig.contact.email}`} className="font-medium text-brand-700 underline break-all">
-                {siteConfig.contact.email}
+              <a href={`mailto:${business.email}`} className="font-medium text-brand-700 underline break-all">
+                {business.email}
               </a>
               .
             </p>

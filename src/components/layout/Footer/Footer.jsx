@@ -3,7 +3,9 @@ import Link from "next/link";
 import Button from "@/components/ui/Button/Button";
 import Container from "@/components/ui/Container/Container";
 import Icon from "@/components/ui/Icon/Icon";
-import { formatAddress, mapsUrl, siteConfig, socialLinks } from "@/config/site";
+import { siteConfig } from "@/config/site";
+import { useBusiness } from "@/hooks/useBusiness";
+import { formatAddress, mapsUrl, socialLinksFrom } from "@/utils/settings";
 import { LEGAL_NAV, ROUTES } from "@/constants/routes";
 import { services } from "@/data/services";
 import { cn } from "@/utils/cn";
@@ -35,7 +37,9 @@ function LinkList({ links }) {
 
 /** Dark footer in the style of the original site. */
 export default function Footer() {
-  const { contact } = siteConfig;
+  const business = useBusiness();
+  const contact = business;
+  const socialLinks = socialLinksFrom(business.social);
 
   return (
     <footer className={styles.footer}>
@@ -67,10 +71,10 @@ export default function Footer() {
           <div className="flex flex-col gap-5">
             <h2 className={styles.title}>Contact info</h2>
             <address className="flex flex-col gap-5 not-italic">
-              <a href={mapsUrl()} target="_blank" rel="noopener noreferrer" className={cn(styles.contactRow, styles.link)}>
+              <a href={mapsUrl(business.address)} target="_blank" rel="noopener noreferrer" className={cn(styles.contactRow, styles.link)}>
                 <Icon name="pin" size={20} className={styles.contactIcon} />
                 <span>
-                  {formatAddress()}
+                  {formatAddress(business.address)}
                   <span className="sr-only"> (opens Google Maps in a new tab)</span>
                 </span>
               </a>

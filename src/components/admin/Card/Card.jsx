@@ -28,7 +28,7 @@ export default function Card({ title, description, actions, padding = "md", as: 
           {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
         </header>
       )}
-      <div className={cn(padding === "none" ? "" : padding === "lg" ? "p-6 md:p-7" : "p-5", bodyClassName)}>{children}</div>
+      <div className={cn(padding === "none" ? "" : padding === "lg" ? "p-7 md:p-9" : "p-6", bodyClassName)}>{children}</div>
     </Tag>
   );
 }

@@ -1,4 +1,5 @@
-import { formatAddress, siteConfig } from "@/config/site";
+import { siteConfig } from "@/config/site";
+import { DEFAULTS, formatAddress } from "@/utils/settings";
 
 /**
  * Legal page content.
@@ -7,18 +8,20 @@ import { formatAddress, siteConfig } from "@/config/site";
  * lawyer) before launch. The privacy policy describes how the enquiry forms
  * built in Phase 4 handle data; update it if that changes.
  *
- * Sections are { heading, paragraphs?, list? }.
+ * Sections are { heading, paragraphs?, list? }. Both lists are functions of
+ * the business details (from /admin/settings/) so the email and address
+ * always match what the rest of the site shows.
  */
 
 export const LEGAL_LAST_UPDATED = "2026-11-18";
 
-export const disclaimerSections = [
+export const disclaimerSections = (business = DEFAULTS.business) => [
   {
     heading: "Beware of fraudulent messages",
     paragraphs: [
       `We are aware of messages that falsely claim to come from ${siteConfig.legalName}, or from third parties acting for us, about educational events, fairs and similar programmes.`,
       "We do not appoint third parties or outside agencies to organise events on our behalf. If you receive an invitation or request for payment that mentions us and you are unsure whether it is genuine, do not respond or pay. Contact us directly using the details on this website and we will confirm.",
-      `Our official email address is ${siteConfig.contact.email}.`,
+      `Our official email address is ${business.email}.`,
     ],
   },
   {
@@ -41,11 +44,11 @@ export const disclaimerSections = [
   },
 ];
 
-export const privacySections = [
+export const privacySections = (business = DEFAULTS.business) => [
   {
     heading: "Who we are",
     paragraphs: [
-      `${siteConfig.legalName} ("we", "us") is an education placement agency at ${formatAddress()}. We are responsible for the personal data you share with us through this website. We handle it in line with the Nigeria Data Protection Act 2023.`,
+      `${siteConfig.legalName} ("we", "us") is an education placement agency at ${formatAddress(business.address)}. We are responsible for the personal data you share with us through this website. We handle it in line with the Nigeria Data Protection Act 2023.`,
     ],
   },
   {
@@ -97,7 +100,7 @@ export const privacySections = [
     heading: "Your rights",
     paragraphs: [
       "You can ask to see the personal data we hold about you, ask us to correct or delete it, or withdraw your consent at any time. You also have the right to complain to the Nigeria Data Protection Commission.",
-      `To make a request, email ${siteConfig.contact.email}.`,
+      `To make a request, email ${business.email}.`,
     ],
   },
   {

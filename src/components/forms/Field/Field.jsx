@@ -16,7 +16,7 @@ import styles from "./Field.module.css";
  * @param {string} [props.error]
  * @param {boolean} [props.required]
  * @param {{ value: string, label: string }[]} [props.options] For selects.
- * @param {string} [props.placeholderOption] First, empty option for selects.
+ * @param {string|false} [props.placeholderOption] First, empty option for selects (false to omit).
  */
 export default function Field({
   id,
@@ -64,7 +64,7 @@ export default function Field({
 
       {as === "select" ? (
         <select {...controlProps}>
-          <option value="">{placeholderOption}</option>
+          {placeholderOption !== false && <option value="">{placeholderOption}</option>}
           {options.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}

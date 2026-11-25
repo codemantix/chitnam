@@ -15,8 +15,10 @@ import { services } from "@/data/services";
 import { testimonials } from "@/data/testimonials";
 import { getPublishedPosts } from "@/services/posts";
 import { faqSchema, organizationSchema } from "@/utils/schema";
+import { withSiteSettings } from "@/lib/withSiteSettings";
+import { useBusiness } from "@/hooks/useBusiness";
 
-export async function getStaticProps() {
+async function loadPageProps() {
   return {
     props: {
       // BlogPreview renders nothing until at least one post is published.
@@ -26,14 +28,18 @@ export async function getStaticProps() {
   };
 }
 
+// Adds the business details from /admin/settings/ (header, footer, contact blocks).
+export const getStaticProps = withSiteSettings(loadPageProps);
+
 export default function HomePage({ latestPosts }) {
+  const business = useBusiness();
   return (
     <>
       <SEO
         title="Study abroad consultants in Port Harcourt"
         description="Chitnam Penguins Links helps Nigerian students with course counselling, university admissions, student visa applications and pre-departure preparation. Based in Port Harcourt since 2015."
         path="/"
-        jsonLd={[organizationSchema(), faqSchema(homeFaqs)]}
+        jsonLd={[organizationSchema(business), faqSchema(homeFaqs)]}
       />
       <HeroSection slides={heroSlides} />
       <ServicesSection services={services} />

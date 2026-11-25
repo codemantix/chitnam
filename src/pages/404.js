@@ -3,6 +3,10 @@ import Container from "@/components/ui/Container/Container";
 import SectionHeading from "@/components/ui/SectionHeading/SectionHeading";
 import SEO from "@/components/ui/SEO/SEO";
 import { ROUTES } from "@/constants/routes";
+import { withSiteSettings } from "@/lib/withSiteSettings";
+
+// Adds the business details from /admin/settings/ (header, footer, contact blocks).
+export const getStaticProps = withSiteSettings();
 
 export default function NotFoundPage() {
   return (

@@ -54,8 +54,11 @@ const Divider = () => <span className={styles.divider} aria-hidden="true" />;
  * @param {(html: string) => void} props.onChange
  * @param {string} [props.error]
  * @param {string} [props.uploadName] Used to name uploaded images (e.g. the post slug).
+ * @param {{ current: object|null }} [props.apiRef] Filled with helpers the writing assistant uses
+ *   (getSelection, replaceRange, setContent, appendContent).
+ * @param {() => void} [props.onAssist] Shows the "AI assist" button; called when it is pressed.
  */
-export default function ClassicEditor({ value, onChange, error, uploadName }) {
+export default function ClassicEditor({ value, onChange, error, uploadName, apiRef, onAssist }) {
   const [mode, setMode] = useState("visual");
   const [html, setHtml] = useState(value || "");
   const [showKitchenSink, setShowKitchenSink] = useState(false);
@@ -135,6 +138,50 @@ export default function ClassicEditor({ value, onChange, error, uploadName }) {
         : null,
   });
 
+  // Helpers for the writing assistant (PostEditor). Kept on a ref so the
+  // assistant can read the selection at request time and replace exactly
+  // that range later, even if the cursor has moved while waiting.
+  useEffect(() => {
+    if (!apiRef) return undefined;
+    apiRef.current = {
+      mode,
+      getSelection() {
+        if (mode !== "visual" || !editor) return null;
+        const { from, to, empty } = editor.state.selection;
+        if (empty) return null;
+        return { from, to, text: editor.state.doc.textBetween(from, to, "\n\n", " ").trim() };
+      },
+      getText() {
+        return editor ? editor.getText({ blockSeparator: "\n\n" }).trim() : "";
+      },
+      replaceRange({ from, to }, content) {
+        if (!editor) return;
+        editor.chain().focus().insertContentAt({ from, to }, content).run();
+      },
+      setContent(content) {
+        if (mode === "visual" && editor) {
+          editor.commands.setContent(content, { emitUpdate: true });
+          editor.commands.focus("start");
+        } else {
+          setHtml(content);
+          onChangeRef.current(content);
+        }
+      },
+      appendContent(content) {
+        if (mode === "visual" && editor) {
+          editor.chain().focus("end").insertContent(content).run();
+        } else {
+          const next = `${html}\n${content}`;
+          setHtml(next);
+          onChangeRef.current(next);
+        }
+      },
+    };
+    return () => {
+      apiRef.current = null;
+    };
+  }, [apiRef, editor, mode, html]);
+
   // Escape leaves fullscreen.
   useEffect(() => {
     if (!fullscreen) return undefined;
@@ -192,10 +239,24 @@ export default function ClassicEditor({ value, onChange, error, uploadName }) {
     <div className={cn(styles.wrapper, fullscreen && styles.fullscreen, error && styles.invalid)}>
       {/* ---------- Media button + Visual/Text tabs ---------- */}
       <div className={cn(styles.top, "flex flex-wrap items-center justify-between gap-3")}>
-        <button type="button" onClick={() => setMediaOpen(true)} className={styles.mediaButton}>
-          <Icon name="image" size={18} />
-          Add Media
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button type="button" onClick={() => setMediaOpen(true)} className={styles.mediaButton}>
+            <Icon name="image" size={18} />
+            Add Media
+          </button>
+          {onAssist && (
+            <button
+              type="button"
+              onMouseDown={(event) => event.preventDefault()} // keep the editor selection
+              onClick={onAssist}
+              className={cn(styles.mediaButton, styles.assistButton)}
+              title="Rewrite the selected text, or draft an article"
+            >
+              <Icon name="sparkle" size={18} />
+              AI assist
+            </button>
+          )}
+        </div>
         <div role="tablist" aria-label="Editor mode" className={styles.tabs}>
           {["visual", "text"].map((tab) => (
             <button

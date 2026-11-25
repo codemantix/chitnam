@@ -21,7 +21,9 @@ export async function getStaffContext(req, res) {
 
   const { data: profile } = await supabase
     .from("staff_profiles")
-    .select("full_name, role")
+    // "*" rather than a column list, so sign-in keeps working whether or not
+    // migration 0004 (job_title, email, invite columns) has been run yet.
+    .select("*")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -68,7 +70,13 @@ export function withStaff(handler) {
       output.props = {
         ...output.props,
         notConfigured: false,
-        staff: { name: staffContext.profile.full_name, role: staffContext.profile.role },
+        staff: {
+          id: staffContext.user.id,
+          name: staffContext.profile.full_name,
+          role: staffContext.profile.role,
+          jobTitle: staffContext.profile.job_title || "",
+          email: staffContext.user.email || "",
+        },
         counts: { newEnquiries },
       };
     }
@@ -97,6 +105,17 @@ export async function requireStaffApi(req, res) {
   }
   if (!staffContext.profile) {
     sendError(res, 403, "Your account doesn't have staff access.");
+    return null;
+  }
+  return staffContext;
+}
+
+/** Like requireStaffApi, but only for administrators (team and site settings). */
+export async function requireAdminApi(req, res) {
+  const staffContext = await requireStaffApi(req, res);
+  if (!staffContext) return null;
+  if (staffContext.profile.role !== "admin") {
+    sendError(res, 403, "Only administrators can do this.");
     return null;
   }
   return staffContext;

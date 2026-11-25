@@ -29,7 +29,7 @@ function LinkForm({ initialHref, initialNewTab, onSubmit, onClose }) {
   };
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
+    <form method="post" onSubmit={submit} className="flex flex-col gap-5" noValidate>
       <Field
         id="link-url"
         label="URL"

@@ -1,9 +1,12 @@
 .card {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   color: inherit;
   text-decoration: none;
   background-color: #fff;
   border: 1px solid var(--admin-border);
-  border-radius: 20px;
+  border-radius: 12px;
   box-shadow: var(--admin-shadow);
   transition:
     transform var(--duration-base) var(--ease-out),
@@ -11,16 +14,16 @@
 }
 
 .card:hover {
-  transform: translateY(-2px);
   box-shadow: var(--admin-shadow-hover);
 }
 
 .value {
   font-family: var(--font-display);
-  font-size: 2rem;
-  font-weight: 600;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+  font-size: 2.75rem;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  font-feature-settings: "lnum", "tnum";
   color: var(--ink-900);
 }
 
@@ -30,7 +33,7 @@
   flex-shrink: 0;
   width: 3rem;
   height: 3rem;
-  border-radius: 16px;
+  border-radius: 12px;
 }
 
 .green {
@@ -51,4 +54,78 @@
 .blue {
   color: #1f5fa8;
   background-color: #e8f1fc;
+}
+
+/* Tinted cards: soft gradient plus a decorative circle in the corner. */
+.card::after {
+  content: none;
+  position: absolute;
+  right: -2.5rem;
+  bottom: -3rem;
+  z-index: -1;
+  width: 8rem;
+  height: 8rem;
+  border-radius: 999px;
+  opacity: 0.55;
+}
+
+.cardGreen {
+  background-image: linear-gradient(145deg, #ffffff 40%, #e3f8eb 100%);
+}
+.cardGreen::after {
+  background-color: #c9f0d8;
+}
+
+.cardAmber {
+  background-image: linear-gradient(145deg, #ffffff 40%, #fff1d6 100%);
+}
+.cardAmber::after {
+  background-color: #ffe3ad;
+}
+
+.cardBlue {
+  background-image: linear-gradient(145deg, #ffffff 40%, #e2eefc 100%);
+}
+.cardBlue::after {
+  background-color: #c9ddf7;
+}
+
+.cardSlate {
+  background-image: linear-gradient(145deg, #ffffff 40%, #eceee9 100%);
+}
+.cardSlate::after {
+  background-color: #dfe2dc;
+}
+
+.green,
+.amber,
+.blue,
+.slate {
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.6);
+}
+
+.green {
+  color: #fff;
+  background-image: linear-gradient(135deg, #17b156, #0b7536);
+}
+
+.amber {
+  color: #fff;
+  background-image: linear-gradient(135deg, #f0a826, #c27700);
+}
+
+.blue {
+  color: #fff;
+  background-image: linear-gradient(135deg, #4b8fe0, #1f5fa8);
+}
+
+.slate {
+  color: #fff;
+  background-image: linear-gradient(135deg, #7b8590, #4a535c);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card:hover {
+    transform: none;
+  }
 }

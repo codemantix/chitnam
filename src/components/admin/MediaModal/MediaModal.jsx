@@ -117,7 +117,7 @@ function MediaBrowser({ mode, uploadName, initialAlt, onSelect }) {
               Select file
             </Button>
             <input ref={fileRef} type="file" accept={ACCEPT} className="sr-only" tabIndex={-1} onChange={(event) => upload(event.target.files)} />
-            <p className="text-xs text-ink-600">JPG, PNG, WebP or AVIF · up to 5 MB · landscape images at least 1600 px wide look best</p>
+            <p className="text-xs text-ink-600">JPG, PNG, WebP or AVIF · up to 25 MB · large images are resized and compressed for you · landscape images at least 1600 px wide look best</p>
             {uploadError && <Alert tone="error" title={uploadError} className="w-full text-left" />}
           </div>
         ) : status === "loading" ? (

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import Button from "@/components/ui/Button/Button";
-import { siteConfig } from "@/config/site";
+import { useBusiness } from "@/hooks/useBusiness";
 import { ROUTES } from "@/constants/routes";
 import { useIsActive } from "@/hooks/useIsActive";
 import { cn } from "@/utils/cn";
@@ -21,7 +21,8 @@ export default function MobileMenu({ items, className }) {
   const [open, setOpen] = useState(false);
   const isActive = useIsActive();
   const router = useRouter();
-  const phone = siteConfig.contact.phones[0];
+  const business = useBusiness();
+  const phone = business.phones[0];
 
   const openMenu = () => {
     dialogRef.current?.showModal();
@@ -132,8 +133,8 @@ export default function MobileMenu({ items, className }) {
               <div>
                 <dt className="text-ink-600">Email</dt>
                 <dd>
-                  <a href={`mailto:${siteConfig.contact.email}`} className="font-medium break-all">
-                    {siteConfig.contact.email}
+                  <a href={`mailto:${business.email}`} className="font-medium break-all">
+                    {business.email}
                   </a>
                 </dd>
               </div>

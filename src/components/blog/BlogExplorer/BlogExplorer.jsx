@@ -15,17 +15,20 @@ import styles from "./BlogExplorer.module.css";
  * @param {object[]} props.posts
  * @param {{ slug: string, name: string }[]} props.categories
  */
-export default function BlogExplorer({ posts, categories }) {
+export default function BlogExplorer({ posts, categories, perPage = 9 }) {
   const router = useRouter();
   // Remount the search box once the query string is known, so ?q= pre-fills it.
-  return <Explorer key={router.isReady ? "ready" : "loading"} posts={posts} categories={categories} router={router} />;
+  return <Explorer key={router.isReady ? "ready" : "loading"} posts={posts} categories={categories} router={router} perPage={perPage} />;
 }
 
-function Explorer({ posts, categories, router }) {
+function Explorer({ posts, categories, router, perPage }) {
   const activeCategory = typeof router.query.category === "string" ? router.query.category : "";
   const [term, setTerm] = useState(typeof router.query.q === "string" ? router.query.q : "");
+  // "Show more" paging (Settings → Blog → Articles per page). Resets with the filters.
+  const [limit, setLimit] = useState(perPage);
 
   const updateUrl = (next) => {
+    setLimit(perPage);
     const query = { ...router.query, ...next };
     Object.keys(query).forEach((key) => !query[key] && delete query[key]);
     router.replace({ pathname: router.pathname, query }, undefined, { shallow: true, scroll: false });
@@ -84,18 +87,29 @@ function Explorer({ posts, categories, router }) {
       </div>
 
       <p className="sr-only" aria-live="polite">
-        {visible.length} {visible.length === 1 ? "article" : "articles"} shown
+        {Math.min(limit, visible.length)} of {visible.length} {visible.length === 1 ? "article" : "articles"} shown
       </p>
 
       {visible.length > 0 ? (
         <ul className="grid gap-x-8 gap-y-14 md:grid-cols-2 lg:grid-cols-3">
-          {visible.map((post) => (
+          {visible.slice(0, limit).map((post) => (
             <li key={post.slug}>
               <PostCard post={post} headingLevel="h2" />
             </li>
           ))}
         </ul>
-      ) : (
+      ) : null}
+      {visible.length > limit && (
+        <div className="flex flex-col items-center gap-2">
+          <Button variant="secondary" onClick={() => setLimit((n) => n + perPage)}>
+            Show more articles
+          </Button>
+          <p className="text-sm text-ink-600">
+            Showing {Math.min(limit, visible.length)} of {visible.length}
+          </p>
+        </div>
+      )}
+      {visible.length === 0 && (
         <div className={cn(styles.empty, "flex flex-col items-start gap-4 p-8")}>
           <p className="font-medium text-ink-900">No articles match your search.</p>
           <p className="text-ink-600">Try a different word, or clear the filters to see everything.</p>

@@ -1,45 +1,118 @@
 /*
- * Admin design scope.
+ * Admin design scope — "sunlit architectural" style:
+ * light, airy type with tight tracking; generous whitespace; a consistent
+ * 12px radius (18px for large feature surfaces); short, soft shadows that
+ * barely lift surfaces. Colours are the admin's existing palette.
  *
- * Re-points shared tokens so components reused from the public site
- * (Field, Button, Alert) become soft and rounded inside the admin only.
+ * Tokens here re-point shared components (Field, Button, Alert) inside the
+ * admin only; the public website is unaffected.
  */
 .shell {
-  --radius-sm: 12px;
-  --radius-md: 16px;
-  --radius-lg: 22px;
-  --alert-radius: 14px;
+  /* Typography: Plus Jakarta Sans (lib/adminFont.js) for everything. */
+  --font-display: var(--font-admin), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-body: var(--font-admin), system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  --admin-bg: #f3f5f0;
+  /* Radius: 12px everywhere; 18px for feature surfaces; 24px pills. */
+  --radius-sm: 12px;
+  --radius-md: 12px;
+  --radius-lg: 12px;
+  --radius-xl: 18px;
+  --radius-pill: 24px;
+  --alert-radius: 12px;
+
+  --admin-bg: #f2f5f1;
   --admin-surface: #ffffff;
   --admin-border: #e5e9e1;
   --admin-muted: #f7f8f5;
-  --admin-shadow: 0 1px 2px rgb(16 24 20 / 0.04), 0 10px 30px -14px rgb(16 24 20 / 0.12);
-  --admin-shadow-hover: 0 2px 4px rgb(16 24 20 / 0.05), 0 18px 40px -18px rgb(16 24 20 / 0.2);
+
+  /* Elevation: subtle, short shadows only. */
+  --admin-shadow: 0 0.5px 2px rgb(0 0 0 / 0.12);
+  --admin-shadow-raised: 0 2px 4px rgb(0 0 0 / 0.12);
+  --admin-shadow-hover: 0 2px 10px rgb(0 0 0 / 0.08);
   --sidebar-width: 17rem;
 
   min-height: 100vh;
+  font-family: var(--font-body);
+  font-feature-settings: "lnum";
+  letter-spacing: -0.006em;
   background:
     radial-gradient(1200px 400px at 100% -10%, rgb(23 177 86 / 0.06), transparent 60%),
     var(--admin-bg);
   color: var(--ink-900);
 }
 
+/* Headings: light weight, tight tracking — size carries the hierarchy. */
+.shell :global(:is(h1, h2, h3, h4)) {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+/* Text fields: soft filled surface, hairline border, 12px radius.
+   (Large headline fields such as the post title opt out with data-headline.) */
+.shell :global(:is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([data-headline]), select, textarea)) {
+  background-color: rgb(0 0 0 / 0.025);
+  border-color: rgb(0 0 0 / 0.1);
+  border-radius: 12px;
+}
+
+.shell :global(:is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([data-headline]), select, textarea):hover) {
+  border-color: rgb(0 0 0 / 0.22);
+}
+
+.shell :global(:is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([data-headline]), select, textarea):focus) {
+  background-color: #fff;
+  border-color: var(--brand-600);
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(23 177 86 / 0.16);
+}
+
+.shell :global(:is(input, select, textarea)[aria-invalid="true"]) {
+  border-color: var(--error-700, #b42318);
+}
+
+.shell :global(:is(input, select, textarea)[readonly]) {
+  background-color: var(--admin-muted);
+}
+
+/* No heavy weights in the admin: utility classes step down one notch. */
+.shell :global(.font-semibold) {
+  font-weight: 500;
+}
+
+.shell :global(.font-bold) {
+  font-weight: 600;
+}
+
+/* Tabular figures wherever numbers are compared. */
+.shell :global(:is(time, table, dd)) {
+  font-feature-settings: "lnum", "tnum";
+}
+
 /* ---------------- Sidebar (desktop) ---------------- */
 
 .sidebar {
+  --side-text: rgb(255 255 255 / 0.78);
+  --side-dim: rgb(255 255 255 / 0.5);
+  --side-hover: rgb(255 255 255 / 0.08);
+  --side-active: rgb(255 255 255 / 0.14);
+
   position: fixed;
   inset: 0.75rem auto 0.75rem 0.75rem;
   z-index: 30;
   display: none;
   width: var(--sidebar-width);
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
   padding: 1.25rem 1rem;
-  background-color: var(--admin-surface);
-  border: 1px solid var(--admin-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--admin-shadow);
+  overflow-y: auto;
+  color: #fff;
+  background:
+    radial-gradient(420px 260px at 0% 0%, rgb(61 220 132 / 0.22), transparent 60%),
+    radial-gradient(360px 300px at 100% 100%, rgb(23 177 86 / 0.18), transparent 60%),
+    linear-gradient(180deg, #0b5a2d 0%, #073d1f 100%);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--admin-shadow-raised);
 }
 
 @media (min-width: 1024px) {
@@ -52,38 +125,68 @@
   display: flex;
   align-items: center;
   gap: 0.625rem;
-  padding: 0.25rem 0.5rem;
   text-decoration: none;
+}
+
+/* The logo is green on white, so it sits on a white plate over the green. */
+.logoPlate {
+  display: inline-flex;
+  padding: 0.4rem 0.6rem;
+  background-color: #fff;
+  border-radius: 12px;
 }
 
 .badge {
   padding: 0.1875rem 0.625rem;
   font-size: 0.6875rem;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--brand-800);
-  background-color: var(--brand-50);
+  color: #d8ffe8;
+  background-color: rgb(255 255 255 / 0.12);
+  border: 1px solid rgb(255 255 255 / 0.18);
   border-radius: 999px;
+}
+
+.newPost {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #073d1f;
+  text-decoration: none;
+  background: linear-gradient(135deg, #ffffff, #e6fbef);
+  border-radius: 12px;
+  box-shadow: 0 0.5px 2px rgb(0 0 0 / 0.2);
+  transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.newPost:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.18);
 }
 
 .navLabel {
   padding: 0 0.75rem;
   font-size: 0.6875rem;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--ink-400);
+  color: var(--side-dim);
 }
 
 .navLink {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.625rem 0.75rem;
+  padding: 0.65rem 0.75rem;
   font-size: 0.9375rem;
   font-weight: 500;
-  color: var(--ink-700);
+  color: var(--side-text);
   text-decoration: none;
   border-radius: 12px;
   transition:
@@ -92,18 +195,35 @@
 }
 
 .navLink:hover {
-  background-color: var(--admin-muted);
-  color: var(--ink-900);
+  background-color: var(--side-hover);
+  color: #fff;
 }
 
 .navActive,
 .navActive:hover {
-  background-color: var(--brand-50);
-  color: var(--brand-800);
+  background-color: var(--side-active);
+  color: #fff;
+}
+
+/* Bright marker on the active item. */
+.navActive::before {
+  content: "";
+  position: absolute;
+  top: 0.6rem;
+  bottom: 0.6rem;
+  left: -0.5rem;
+  width: 4px;
+  background-color: #3ddc84;
+  border-radius: 0 4px 4px 0;
 }
 
 .navActive svg {
-  color: var(--brand-600);
+  color: #7ff0b0;
+}
+
+.externalIcon {
+  margin-left: auto;
+  color: var(--side-dim);
 }
 
 .count {
@@ -113,8 +233,8 @@
   font-size: 0.75rem;
   font-weight: 600;
   text-align: center;
-  color: var(--white);
-  background-color: var(--brand-700);
+  color: #073d1f;
+  background-color: #7ff0b0;
   border-radius: 999px;
 }
 
@@ -124,8 +244,13 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem;
-  background-color: var(--admin-muted);
-  border-radius: 16px;
+  background-color: rgb(0 0 0 / 0.18);
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 12px;
+}
+
+.role {
+  color: var(--side-dim);
 }
 
 .avatar {
@@ -136,9 +261,9 @@
   height: 2.5rem;
   font-family: var(--font-display);
   font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--white);
-  background: linear-gradient(135deg, var(--brand-600), var(--brand-800));
+  font-weight: 500;
+  color: #073d1f;
+  background: linear-gradient(135deg, #b6f5d1, #3ddc84);
   border-radius: 999px;
 }
 
@@ -147,7 +272,7 @@
   place-items: center;
   width: 2.25rem;
   height: 2.25rem;
-  color: var(--ink-600);
+  color: rgb(255 255 255 / 0.75);
   border-radius: 10px;
   cursor: pointer;
   transition:
@@ -156,8 +281,8 @@
 }
 
 .iconButton:hover {
-  background-color: var(--white);
-  color: var(--ink-900);
+  background-color: rgb(255 255 255 / 0.12);
+  color: #fff;
 }
 
 /* ---------------- Top bar (mobile/tablet) ---------------- */
@@ -166,8 +291,9 @@
   position: sticky;
   top: 0;
   z-index: 30;
-  background-color: rgb(255 255 255 / 0.96);
-  border-bottom: 1px solid var(--admin-border);
+  color: #fff;
+  background: linear-gradient(180deg, #0b5a2d 0%, #084826 100%);
+  box-shadow: var(--admin-shadow);
 }
 
 @media (min-width: 1024px) {
@@ -192,49 +318,63 @@
   padding: 0.5rem 0.875rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--ink-700);
+  color: rgb(255 255 255 / 0.8);
   text-decoration: none;
-  background-color: var(--admin-muted);
+  background-color: rgb(255 255 255 / 0.1);
   border-radius: 999px;
 }
 
 .mobileActive {
-  color: var(--brand-800);
-  background-color: var(--brand-50);
+  color: #073d1f;
+  background-color: #fff;
+}
+
+.mobileNew {
+  color: #073d1f;
+  background-color: #7ff0b0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .newPost:hover {
+    transform: none;
+  }
 }
 
 /* ---------------- Main ---------------- */
 
 .main {
-  padding: 1.5rem 1rem 3rem;
+  padding: 2rem 1rem 4rem;
 }
 
 @media (min-width: 768px) {
   .main {
-    padding: 2rem 2rem 4rem;
+    padding: 3rem 2.5rem 6rem;
   }
 }
 
 @media (min-width: 1024px) {
   .main {
     margin-left: calc(var(--sidebar-width) + 0.75rem);
-    padding: 2.25rem 2.5rem 4rem;
+    padding: 3.5rem 3.5rem 7rem;
   }
 }
 
 .inner {
-  max-width: 82rem;
+  max-width: 80rem;
   margin-inline: auto;
 }
 
 .eyebrow {
   font-size: 0.8125rem;
   font-weight: 500;
-  color: var(--ink-600);
+  letter-spacing: -0.01em;
+  color: var(--brand-700);
 }
 
-.title {
-  font-size: clamp(1.5rem, 1.25rem + 1vw, 2rem);
-  font-weight: 600;
-  letter-spacing: -0.02em;
+/* Page title: large, light and tightly tracked (the style's signature). */
+.shell .title {
+  font-size: clamp(2.125rem, 1.4rem + 2.2vw, 3rem);
+  font-weight: 300;
+  line-height: 1.04;
+  letter-spacing: -0.04em;
 }

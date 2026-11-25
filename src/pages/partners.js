@@ -9,8 +9,12 @@ import { ROUTES } from "@/constants/routes";
 import { partnerGroups, partners } from "@/data/partners";
 import { crumbs } from "@/utils/breadcrumbs";
 import { breadcrumbSchema } from "@/utils/schema";
+import { withSiteSettings } from "@/lib/withSiteSettings";
 
 const BREADCRUMBS = crumbs({ label: "Partners", href: ROUTES.partners });
+
+// Adds the business details from /admin/settings/ (header, footer, contact blocks).
+export const getStaticProps = withSiteSettings();
 
 export default function PartnersPage() {
   return (

@@ -1,13 +1,14 @@
 import { siteConfig } from "@/config/site";
 import { absoluteUrl } from "@/utils/seo";
+import { DEFAULTS, socialLinksFrom } from "@/utils/settings";
 
 /**
  * JSON-LD builders. Pass the result to <SEO jsonLd={[...]} />.
- * Only facts from config/site.js are used, so nothing unverified is
- * asserted beyond what the site already shows.
+ * Only facts the site already shows are used (config/site.js plus the
+ * business details from /admin/settings/).
  */
 
-export function organizationSchema() {
+export function organizationSchema(business = DEFAULTS.business) {
   return {
     "@context": "https://schema.org",
     "@type": "EducationalOrganization",
@@ -17,8 +18,8 @@ export function organizationSchema() {
     url: absoluteUrl("/"),
     logo: absoluteUrl(siteConfig.logo.src),
     foundingDate: String(siteConfig.foundingYear),
-    email: siteConfig.contact.email,
-    sameAs: Object.values(siteConfig.social).filter(Boolean),
+    email: business.email,
+    sameAs: socialLinksFrom(business.social).map((link) => link.href),
   };
 }
 
@@ -26,8 +27,9 @@ export function organizationSchema() {
  * LocalBusiness for the Port Harcourt office (local search).
  * Opening hours are omitted until the client confirms them.
  */
-export function localBusinessSchema() {
-  const { address, contact } = siteConfig;
+export function localBusinessSchema(business = DEFAULTS.business) {
+  const { address } = business;
+  const contact = business;
   return {
     "@context": "https://schema.org",
     "@type": ["LocalBusiness", "EducationalOrganization"],
@@ -43,7 +45,7 @@ export function localBusinessSchema() {
       streetAddress: address.street,
       addressLocality: address.city,
       addressRegion: address.region,
-      addressCountry: address.countryCode,
+      addressCountry: siteConfig.address.countryCode,
     },
     areaServed: { "@type": "Country", name: "Nigeria" },
     parentOrganization: { "@id": `${siteConfig.url}/#organization` },

@@ -1,0 +1,333 @@
+/* ----- Filters ----- */
+.filters {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background-color: #e9ede6;
+  border-radius: 12px;
+}
+
+.filter {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ink-600);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.filter:hover {
+  color: var(--ink-900);
+}
+
+.filterActive {
+  color: var(--ink-900);
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgb(21 24 27 / 0.1);
+}
+
+/* ----- Table ----- */
+.tableHead,
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 2.2fr) 10rem 9rem 9rem 13.5rem;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1.25rem;
+}
+
+.tableHead {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+  border-bottom: 1px solid var(--admin-border, #e5e9e1);
+}
+
+.row + .row {
+  border-top: 1px solid var(--admin-border, #e5e9e1);
+}
+
+.row:hover {
+  background-color: var(--admin-muted, #f7f8f5);
+}
+
+.rowBusy {
+  opacity: 0.6;
+}
+
+.cellLabel {
+  display: none;
+}
+
+.avatar {
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 999px;
+}
+
+.toneGreen { color: #0b6631; background-color: #d9f5e4; }
+.toneViolet { color: #4b3aa6; background-color: #ebe6ff; }
+.toneAmber { color: #8a5a00; background-color: #ffefcc; }
+.toneBlue { color: #1f5fa8; background-color: #dfecfb; }
+.toneRose { color: #a8325a; background-color: #fde3ec; }
+
+.you {
+  padding: 0.05rem 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--brand-800);
+  background-color: var(--brand-50);
+  border-radius: 999px;
+}
+
+.roleSelect {
+  width: 100%;
+  max-width: 10rem;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ink-900);
+  background-color: #fff;
+  border: 1px solid var(--admin-border, #e5e9e1);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.roleBadge {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--ink-700);
+  background-color: #f1f3ee;
+  border-radius: 999px;
+}
+
+.roleAdmin {
+  color: #4b3aa6;
+  background-color: #f3f0ff;
+  border-color: #ddd5fb;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-radius: 999px;
+}
+
+.dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  background-color: currentColor;
+  border-radius: 999px;
+}
+
+.statusActive { color: #0b6631; background-color: #e3f8eb; }
+.statusInvited { color: #8a5a00; background-color: #fff3d6; }
+.statusExpired { color: #b42318; background-color: #fdecea; }
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.25rem;
+}
+
+.action {
+  display: inline-flex;
+  white-space: nowrap;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--ink-700);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.action:hover:not(:disabled) {
+  color: var(--ink-900);
+  background-color: #eef1ea;
+}
+
+.action:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.danger:hover:not(:disabled) {
+  color: #b42318;
+  background-color: #fdecea;
+}
+
+/* Tablet and phone: each member becomes a card. */
+@media (max-width: 1023px) {
+  .tableHead {
+    display: none;
+  }
+
+  .row {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem 1rem;
+  }
+
+  .row > :first-child {
+    grid-column: 1 / -1;
+  }
+
+  .cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .cellLabel {
+    display: block;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-400);
+  }
+
+  .actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+}
+
+/* ----- Permissions matrix ----- */
+.matrix {
+  width: 100%;
+  font-size: 0.9375rem;
+  border-collapse: collapse;
+}
+
+.matrix th,
+.matrix td {
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--admin-border, #e5e9e1);
+}
+
+.matrix thead th {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+}
+
+.matrix thead th:not(:first-child),
+.matrix td {
+  width: 8.5rem;
+  text-align: center;
+}
+
+.matrix tbody th {
+  font-weight: 500;
+  color: var(--ink-900);
+}
+
+.matrix tbody tr:last-child th,
+.matrix tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.yes {
+  display: inline-grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  color: #fff;
+  background-color: var(--brand-700);
+  border-radius: 999px;
+}
+
+.no {
+  color: var(--ink-400);
+}
+
+/* ----- Invite dialog ----- */
+.roleCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--admin-border, #e5e9e1);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out);
+}
+
+.roleCard:hover {
+  border-color: var(--brand-600);
+}
+
+.roleCardActive {
+  background-color: #f3fbf6;
+  border-color: var(--brand-600);
+  box-shadow: 0 0 0 1px var(--brand-600);
+}
+
+.toggleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  background-color: var(--admin-muted, #f7f8f5);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.toggleRow input {
+  margin-top: 0.2rem;
+}
+
+.input {
+  min-width: 0;
+  flex: 1;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.875rem;
+  background-color: #fff;
+  border: 1px solid var(--admin-border, #e5e9e1);
+  border-radius: 12px;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8125rem;
+}
+
+@media (max-width: 639px) {
+  .matrix {
+    font-size: 0.875rem;
+  }
+  .matrix th,
+  .matrix td {
+    padding: 0.6rem 0.35rem;
+  }
+  .matrix thead th:not(:first-child),
+  .matrix td {
+    width: 4.75rem;
+  }
+  .matrix thead th {
+    font-size: 0.625rem;
+    letter-spacing: 0.04em;
+  }
+}

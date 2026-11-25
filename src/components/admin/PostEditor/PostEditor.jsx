@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/router";
+import AIAssistant from "@/components/admin/AIAssistant/AIAssistant";
+import { useConfirm } from "@/components/admin/ConfirmDialog/ConfirmDialog";
 import Card from "@/components/admin/Card/Card";
 import Icon from "@/components/ui/Icon/Icon";
 import MediaModal from "@/components/admin/MediaModal/MediaModal";
@@ -17,23 +19,28 @@ import { hasErrors, slugify, validatePost } from "@/utils/validation";
 import styles from "./PostEditor.module.css";
 
 // The editor only runs in the browser, and only admin pages load it.
-const ClassicEditor = dynamic(() => import("@/components/admin/ClassicEditor/ClassicEditor"), {
-  ssr: false,
-  loading: () => (
-    <div className={styles.editorLoading} role="status">
-      Loading editor…
-    </div>
-  ),
-});
+const ClassicEditor = dynamic(
+  () => import("@/components/admin/ClassicEditor/ClassicEditor"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className={styles.editorLoading} role="status">
+        Loading editor…
+      </div>
+    ),
+  },
+);
 
 /** ISO string → value for <input type="datetime-local"> in the browser's time zone. */
 function toLocalInput(iso) {
   if (!iso) return "";
   const date = new Date(iso);
-  return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 16);
 }
 
-function fromRow(post, authors) {
+function fromRow(post, authors, defaults = {}) {
   return {
     title: post?.title || "",
     slug: post?.slug || "",
@@ -41,8 +48,10 @@ function fromRow(post, authors) {
     body: post?.body || "",
     coverImagePath: post?.cover_image_path || "",
     coverImageAlt: post?.cover_image_alt || "",
-    categoryId: post?.category_id || "",
-    authorId: post?.author_id || authors[0]?.id || "",
+    categoryId: post ? post.category_id || "" : defaults.categoryId || "",
+    authorId: post
+      ? post.author_id || ""
+      : defaults.authorId || authors[0]?.id || "",
     status: post?.status || "draft",
     publishedAt: toLocalInput(post?.published_at),
     seoTitle: post?.seo_title || "",
@@ -66,21 +75,64 @@ function Counter({ value, max }) {
  * @param {object|null} props.post Database row, or null for a new post.
  * @param {{ id: string, name: string }[]} props.categories
  * @param {{ id: string, name: string }[]} props.authors
+ * @param {{ authorId?: string, categoryId?: string }} [props.defaults] For new posts (Settings → Blog).
  */
-export default function PostEditor({ post, categories, authors }) {
+export default function PostEditor({ post, categories, authors, defaults }) {
+  const confirm = useConfirm();
   const router = useRouter();
   const isNew = !post;
   const wasPublished = post?.status === "published";
-  const [values, setValues] = useState(() => fromRow(post, authors));
+  const [values, setValues] = useState(() => fromRow(post, authors, defaults));
   const [slugEdited, setSlugEdited] = useState(Boolean(post?.slug));
   const [editingSlug, setEditingSlug] = useState(false);
   const [editingDate, setEditingDate] = useState(false);
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("idle"); // idle | saving | saved | error | deleting
-  const [message, setMessage] = useState(router.query.created ? "Post created. Keep writing, then save." : "");
+  const [message, setMessage] = useState(
+    router.query.created ? "Post created. Keep writing, then save." : "",
+  );
   const [featuredOpen, setFeaturedOpen] = useState(false);
   const [savingAs, setSavingAs] = useState(null); // which button started the save
   const dirty = useRef(false);
+  const editorApi = useRef(null);
+  const [categoryList, setCategoryList] = useState(categories);
+  const [addingCategory, setAddingCategory] = useState(false);
+  const [newCategory, setNewCategory] = useState("");
+  const [categoryError, setCategoryError] = useState("");
+  const [savingCategory, setSavingCategory] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiSession, setAiSession] = useState({
+    id: 0,
+    tab: "draft",
+    selection: null,
+  });
+  const [aiConfigured, setAiConfigured] = useState(null); // null = unknown
+  const [aiEnabled, setAiEnabled] = useState(true); // Settings → Blog
+
+  // Ask the server whether a Gemini key is set, so the UI can explain setup.
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/admin/ai/")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return;
+        setAiConfigured(Boolean(data.configured));
+        setAiEnabled(data.enabled !== false);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Captures the editor selection at the moment the assistant opens.
+  // "auto" (toolbar button) opens Rewrite when text is selected, else Draft.
+  const openAssistant = (tab) => {
+    const selection = editorApi.current?.getSelection?.() || null;
+    const resolved = tab === "auto" ? (selection ? "rewrite" : "draft") : tab;
+    setAiSession((s) => ({ id: s.id + 1, tab: resolved, selection }));
+    setAiOpen(true);
+  };
 
   // Warn before leaving with unsaved changes.
   useEffect(() => {
@@ -107,7 +159,9 @@ export default function PostEditor({ post, categories, authors }) {
     const payload = {
       ...values,
       status: nextStatus,
-      publishedAt: values.publishedAt ? new Date(values.publishedAt).toISOString() : null,
+      publishedAt: values.publishedAt
+        ? new Date(values.publishedAt).toISOString()
+        : null,
     };
     const { errors: clientErrors } = validatePost(payload);
     if (hasErrors(clientErrors)) {
@@ -122,11 +176,14 @@ export default function PostEditor({ post, categories, authors }) {
     setSavingAs(nextStatus);
     setMessage("");
     try {
-      const response = await fetch(isNew ? "/api/admin/posts/" : `/api/admin/posts/${post.id}/`, {
-        method: isNew ? "POST" : "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        isNew ? "/api/admin/posts/" : `/api/admin/posts/${post.id}/`,
+        {
+          method: isNew ? "POST" : "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
       const result = await response.json().catch(() => ({}));
       if (!response.ok) {
         if (result.errors) setErrors(result.errors);
@@ -148,22 +205,78 @@ export default function PostEditor({ post, categories, authors }) {
             : "Post published. It's now live on the blog."
           : wasPublished
             ? "Post switched to draft and removed from the blog."
-            : "Draft saved."
+            : "Draft saved.",
       );
       // Refresh server data (e.g. publication date) without losing the editor.
       router.replace(router.asPath, undefined, { scroll: false });
     } catch {
       setStatus("error");
-      setMessage("We couldn't reach the server. Check your connection and try again.");
+      setMessage(
+        "We couldn't reach the server. Check your connection and try again.",
+      );
     } finally {
       setSavingAs(null);
     }
   };
 
+  // WordPress-style "Add new category": creates it and selects it.
+  const addCategory = async () => {
+    const name = newCategory.trim();
+    if (name.length < 2) {
+      setCategoryError("Enter a category name (at least 2 characters).");
+      return;
+    }
+    const existing = categoryList.find(
+      (c) => c.name.toLowerCase() === name.toLowerCase(),
+    );
+    if (existing) {
+      set("categoryId", existing.id);
+      setNewCategory("");
+      setAddingCategory(false);
+      return;
+    }
+    setSavingCategory(true);
+    setCategoryError("");
+    try {
+      const response = await fetch("/api/admin/categories/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setCategoryError(result.message || "The category couldn't be added.");
+        return;
+      }
+      setCategoryList((list) => [...list, result.category]);
+      set("categoryId", result.category.id);
+      setNewCategory("");
+      setAddingCategory(false);
+    } catch {
+      setCategoryError(
+        "We couldn't reach the server. Check your connection and try again.",
+      );
+    } finally {
+      setSavingCategory(false);
+    }
+  };
+
   const remove = async () => {
-    if (!window.confirm(`Move “${values.title || "this post"}” to the bin? This permanently deletes it.`)) return;
+    const ok = await confirm({
+      tone: "danger",
+      title: `Delete “${values.title || "this post"}”?`,
+      message: "The post is deleted permanently. This can't be undone.",
+      details: wasPublished
+        ? ["It disappears from the blog straight away.", "Links to it will show “page not found”."]
+        : undefined,
+      confirmLabel: "Delete post",
+      cancelLabel: "Keep post",
+    });
+    if (!ok) return;
     setStatus("deleting");
-    const response = await fetch(`/api/admin/posts/${post.id}/`, { method: "DELETE" }).catch(() => null);
+    const response = await fetch(`/api/admin/posts/${post.id}/`, {
+      method: "DELETE",
+    }).catch(() => null);
     if (response?.ok) {
       dirty.current = false;
       router.replace("/admin/posts/?deleted=1");
@@ -176,13 +289,19 @@ export default function PostEditor({ post, categories, authors }) {
   const busy = status === "saving" || status === "deleting";
   const coverUrl = blogImageUrl(values.coverImagePath);
   const host = siteConfig.url.replace(/^https?:\/\//, "");
-  const scheduled = values.publishedAt && new Date(values.publishedAt) > new Date();
+  const scheduled =
+    values.publishedAt && new Date(values.publishedAt) > new Date();
 
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_21rem]">
       {/* ================= Main column ================= */}
       <div className="flex min-w-0 flex-col gap-6">
-        {message && <Alert tone={status === "error" ? "error" : "success"} title={message} />}
+        {message && (
+          <Alert
+            tone={status === "error" ? "error" : "success"}
+            title={message}
+          />
+        )}
 
         <div className="flex flex-col gap-2">
           <label htmlFor="post-title" className="sr-only">
@@ -190,6 +309,7 @@ export default function PostEditor({ post, categories, authors }) {
           </label>
           <input
             id="post-title"
+            data-headline
             name="title"
             value={values.title}
             onChange={onField}
@@ -206,7 +326,12 @@ export default function PostEditor({ post, categories, authors }) {
           )}
 
           {/* Permalink, editable inline like WordPress */}
-          <div className={cn(styles.permalink, "flex flex-wrap items-center gap-x-2 gap-y-2")}>
+          <div
+            className={cn(
+              styles.permalink,
+              "flex flex-wrap items-center gap-x-2 gap-y-2",
+            )}
+          >
             <span className="font-medium text-ink-700">Permalink:</span>
             {editingSlug ? (
               <>
@@ -220,34 +345,63 @@ export default function PostEditor({ post, categories, authors }) {
                   value={values.slug}
                   onChange={(event) => {
                     setSlugEdited(true);
-                    set("slug", event.target.value.toLowerCase().replace(/\s+/g, "-"));
+                    set(
+                      "slug",
+                      event.target.value.toLowerCase().replace(/\s+/g, "-"),
+                    );
                   }}
                   className={styles.slugInput}
                 />
-                <button type="button" className={styles.pill} onClick={() => setEditingSlug(false)}>
+                <button
+                  type="button"
+                  className={styles.pill}
+                  onClick={() => setEditingSlug(false)}
+                >
                   OK
                 </button>
               </>
             ) : (
               <>
                 <span className="break-all text-ink-600">
-                  {host}/blog/<strong className="font-semibold text-ink-900">{values.slug || "…"}</strong>/
+                  {host}/blog/
+                  <strong className="font-semibold text-ink-900">
+                    {values.slug || "…"}
+                  </strong>
+                  /
                 </span>
-                <button type="button" className={styles.pill} onClick={() => setEditingSlug(true)}>
+                <button
+                  type="button"
+                  className={styles.pill}
+                  onClick={() => setEditingSlug(true)}
+                >
                   Edit
                 </button>
               </>
             )}
           </div>
-          {errors.slug && <p className="px-1 text-sm text-error-700">{errors.slug}</p>}
+          {errors.slug && (
+            <p className="px-1 text-sm text-error-700">{errors.slug}</p>
+          )}
         </div>
 
         <div className="flex flex-col gap-2">
-          <ClassicEditor value={values.body} onChange={(html) => set("body", html)} error={errors.body} uploadName={values.slug || values.title} />
-          {errors.body && <p className="px-1 text-sm text-error-700">{errors.body}</p>}
+          <ClassicEditor
+            value={values.body}
+            onChange={(html) => set("body", html)}
+            error={errors.body}
+            uploadName={values.slug || values.title}
+            apiRef={editorApi}
+            onAssist={aiEnabled ? () => openAssistant("auto") : undefined}
+          />
+          {errors.body && (
+            <p className="px-1 text-sm text-error-700">{errors.body}</p>
+          )}
         </div>
 
-        <Card title="Excerpt" description="A one- or two-sentence summary shown on the blog page and in search results.">
+        <Card
+          title="Excerpt"
+          description="A one- or two-sentence summary shown on the blog page and in search results."
+        >
           <Field
             as="textarea"
             id="excerpt"
@@ -265,15 +419,34 @@ export default function PostEditor({ post, categories, authors }) {
           </div>
         </Card>
 
-        <Card title="Search engine listing" description="Optional. Leave empty to use the title and excerpt.">
+        <Card
+          title="Search engine listing"
+          description="Optional. Leave empty to use the title and excerpt."
+        >
           <div className="grid gap-5 lg:grid-cols-2">
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
-                <Field id="seoTitle" name="seoTitle" label="SEO title" value={values.seoTitle} onChange={onField} error={errors.seoTitle} />
+                <Field
+                  id="seoTitle"
+                  name="seoTitle"
+                  label="SEO title"
+                  value={values.seoTitle}
+                  onChange={onField}
+                  error={errors.seoTitle}
+                />
                 <Counter value={values.seoTitle} max={70} />
               </div>
               <div className="flex flex-col gap-1">
-                <Field as="textarea" rows={3} id="seoDescription" name="seoDescription" label="Meta description" value={values.seoDescription} onChange={onField} error={errors.seoDescription} />
+                <Field
+                  as="textarea"
+                  rows={3}
+                  id="seoDescription"
+                  name="seoDescription"
+                  label="Meta description"
+                  value={values.seoDescription}
+                  onChange={onField}
+                  error={errors.seoDescription}
+                />
                 <Counter value={values.seoDescription} max={170} />
               </div>
             </div>
@@ -282,30 +455,58 @@ export default function PostEditor({ post, categories, authors }) {
               <p className={styles.serpUrl}>
                 {host} › blog › {values.slug || "your-post"}
               </p>
-              <p className={styles.serpTitle}>{(values.seoTitle || values.title || "Your article title").slice(0, 70)}</p>
-              <p className={styles.serpText}>{(values.seoDescription || values.excerpt || "Your summary appears here…").slice(0, 160)}</p>
+              <p className={styles.serpTitle}>
+                {(
+                  values.seoTitle ||
+                  values.title ||
+                  "Your article title"
+                ).slice(0, 70)}
+              </p>
+              <p className={styles.serpText}>
+                {(
+                  values.seoDescription ||
+                  values.excerpt ||
+                  "Your summary appears here…"
+                ).slice(0, 160)}
+              </p>
             </div>
           </div>
         </Card>
       </div>
 
       {/* ================= Sidebar ================= */}
-      <div className="flex flex-col gap-6">
+      <div className={cn(styles.sidebar, "flex flex-col gap-6")}>
         <Card title="Publish" padding="none" className={styles.sticky}>
           <div className="flex flex-col gap-4 p-5">
             <div className="flex flex-wrap gap-2">
               {!isNew && (
-                <Button type="button" variant="secondary" size="md" onClick={() => save("draft")} disabled={busy}>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="md"
+                  onClick={() => save("draft")}
+                  disabled={busy}
+                >
                   {wasPublished ? "Switch to draft" : "Save draft"}
                 </Button>
               )}
               {wasPublished && (
-                <Button href={ROUTES.post(post.slug)} variant="secondary" target="_blank">
+                <Button
+                  href={ROUTES.post(post.slug)}
+                  variant="secondary"
+                  target="_blank"
+                >
                   View post
                 </Button>
               )}
               {isNew && (
-                <Button type="button" variant="secondary" onClick={() => save("draft")} loading={savingAs === "draft"} disabled={busy}>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => save("draft")}
+                  loading={savingAs === "draft"}
+                  disabled={busy}
+                >
                   Save draft
                 </Button>
               )}
@@ -316,17 +517,39 @@ export default function PostEditor({ post, categories, authors }) {
                 <Icon name="lock" size={18} className="text-ink-400" />
                 <dt className="text-ink-600">Status:</dt>
                 <dd className="font-semibold">
-                  <span className={cn(styles.status, values.status === "published" ? styles.statusLive : styles.statusDraft)}>
-                    {values.status === "published" ? (scheduled ? "Scheduled" : "Published") : "Draft"}
+                  <span
+                    className={cn(
+                      styles.status,
+                      values.status === "published"
+                        ? styles.statusLive
+                        : styles.statusDraft,
+                    )}
+                  >
+                    {values.status === "published"
+                      ? scheduled
+                        ? "Scheduled"
+                        : "Published"
+                      : "Draft"}
                   </span>
                 </dd>
               </div>
               <div className="flex flex-col gap-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <Icon name="calendar" size={18} className="text-ink-400" />
-                  <dt className="text-ink-600">{scheduled ? "Scheduled for:" : "Publish:"}</dt>
-                  <dd className="font-semibold">{values.publishedAt ? formatDate(new Date(values.publishedAt)) : "Immediately"}</dd>
-                  <button type="button" className={styles.pill} onClick={() => setEditingDate((open) => !open)} aria-expanded={editingDate}>
+                  <dt className="text-ink-600">
+                    {scheduled ? "Scheduled for:" : "Publish:"}
+                  </dt>
+                  <dd className="font-semibold">
+                    {values.publishedAt
+                      ? formatDate(new Date(values.publishedAt))
+                      : "Immediately"}
+                  </dd>
+                  <button
+                    type="button"
+                    className={styles.pill}
+                    onClick={() => setEditingDate((open) => !open)}
+                    aria-expanded={editingDate}
+                  >
                     {editingDate ? "Done" : "Edit"}
                   </button>
                 </div>
@@ -346,48 +569,219 @@ export default function PostEditor({ post, categories, authors }) {
             </dl>
           </div>
 
-          <div className={cn(styles.publishBar, "flex items-center justify-between gap-3 px-5 py-4")}>
+          <div
+            className={cn(
+              styles.publishBar,
+              "flex items-center justify-between gap-3 px-5 py-4",
+            )}
+          >
             {!isNew ? (
-              <button type="button" className={styles.trash} onClick={remove} disabled={busy}>
-                {status === "deleting" ? "Deleting…" : "Move to bin"}
+              <button
+                type="button"
+                className={styles.trash}
+                onClick={remove}
+                disabled={busy}
+              >
+                {status === "deleting" ? "Deleting…" : "Delete post"}
               </button>
             ) : (
               <span />
             )}
-            <Button type="button" onClick={() => save("published")} loading={savingAs === "published"} disabled={busy}>
+            <Button
+              type="button"
+              onClick={() => save("published")}
+              loading={savingAs === "published"}
+              disabled={busy}
+            >
               {wasPublished ? "Update" : scheduled ? "Schedule" : "Publish"}
             </Button>
           </div>
         </Card>
 
+        {aiEnabled && (
+          <Card title="Writing assistant" className={styles.aiCard}>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-ink-600">
+                Draft, rewrite and polish your article with AI.
+                {aiConfigured === false && " Not set up yet."}
+              </p>
+              {[
+                ["draft", "posts", "Write a draft", "From a topic or outline"],
+                [
+                  "rewrite",
+                  "sparkle",
+                  "Rewrite selection",
+                  "Improve, shorten, simplify…",
+                ],
+                [
+                  "meta",
+                  "search",
+                  "Title & SEO ideas",
+                  "Headlines, excerpt, meta",
+                ],
+              ].map(([tab, icon, label, sub]) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => openAssistant(tab)}
+                  className={cn(styles.aiAction, "flex items-center gap-3")}
+                >
+                  <span className={styles.aiIcon} aria-hidden="true">
+                    <Icon name={icon} size={16} />
+                  </span>
+                  <span className="flex min-w-0 flex-col text-left">
+                    <span className="font-medium text-ink-900">{label}</span>
+                    <span className="text-xs text-ink-600">{sub}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </Card>
+        )}
+
         <Card title="Category">
           <fieldset className="flex max-h-56 flex-col gap-1 overflow-y-auto">
             <legend className="sr-only">Category</legend>
-            {[{ id: "", name: "Uncategorised" }, ...categories].map((category) => (
-              <label key={category.id || "none"} className={cn(styles.choice, values.categoryId === category.id && styles.choiceActive)}>
-                <input type="radio" name="categoryId" value={category.id} checked={values.categoryId === category.id} onChange={onField} className="size-4 accent-brand-700" />
-                {category.name}
-              </label>
-            ))}
+            {[{ id: "", name: "Uncategorised" }, ...categoryList].map(
+              (category) => (
+                <label
+                  key={category.id || "none"}
+                  className={cn(
+                    styles.choice,
+                    values.categoryId === category.id && styles.choiceActive,
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="categoryId"
+                    value={category.id}
+                    checked={values.categoryId === category.id}
+                    onChange={onField}
+                    className="size-4 accent-brand-700"
+                  />
+                  {category.name}
+                </label>
+              ),
+            )}
           </fieldset>
+
+          <div className={cn(styles.addCategory, "mt-3 flex flex-col gap-2")}>
+            {!addingCategory ? (
+              <button
+                type="button"
+                className={styles.addCategoryLink}
+                onClick={() => setAddingCategory(true)}
+              >
+                <Icon name="plus" size={16} />
+                Add new category
+              </button>
+            ) : (
+              <>
+                <label
+                  htmlFor="new-category"
+                  className="text-sm font-medium text-ink-900"
+                >
+                  New category name
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    id="new-category"
+                    autoFocus
+                    value={newCategory}
+                    maxLength={60}
+                    onChange={(event) => {
+                      setNewCategory(event.target.value);
+                      setCategoryError("");
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        addCategory();
+                      }
+                      if (event.key === "Escape") setAddingCategory(false);
+                    }}
+                    aria-invalid={categoryError ? true : undefined}
+                    aria-describedby={
+                      categoryError ? "new-category-error" : undefined
+                    }
+                    placeholder="e.g. Scholarships in Canada"
+                    className={styles.categoryInput}
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={addCategory}
+                    loading={savingCategory}
+                    disabled={savingCategory}
+                  >
+                    Add
+                  </Button>
+                </div>
+                {categoryError && (
+                  <p id="new-category-error" className="text-sm text-error-700">
+                    {categoryError}
+                  </p>
+                )}
+                <button
+                  type="button"
+                  className="self-start text-sm text-ink-600 hover:underline"
+                  onClick={() => {
+                    setAddingCategory(false);
+                    setNewCategory("");
+                    setCategoryError("");
+                  }}
+                >
+                  Cancel
+                </button>
+              </>
+            )}
+          </div>
         </Card>
 
         <Card title="Author">
-          <Field as="select" id="authorId" name="authorId" label="Byline" placeholderOption="No author" options={authors.map((a) => ({ value: a.id, label: a.name }))} value={values.authorId} onChange={onField} />
+          <Field
+            as="select"
+            id="authorId"
+            name="authorId"
+            label="Byline"
+            placeholderOption="No author"
+            options={authors.map((a) => ({ value: a.id, label: a.name }))}
+            value={values.authorId}
+            onChange={onField}
+          />
         </Card>
 
         <Card title="Featured image">
           {coverUrl ? (
             <div className="flex flex-col gap-3">
-              <button type="button" onClick={() => setFeaturedOpen(true)} className={styles.featured} title="Replace featured image">
-                <Image src={coverUrl} alt={values.coverImageAlt || "Featured image"} fill sizes="320px" className="object-cover" />
+              <button
+                type="button"
+                onClick={() => setFeaturedOpen(true)}
+                className={styles.featured}
+                title="Replace featured image"
+              >
+                <Image
+                  src={coverUrl}
+                  alt={values.coverImageAlt || "Featured image"}
+                  fill
+                  sizes="320px"
+                  className="object-cover"
+                />
               </button>
               <p className="text-xs text-ink-600">
-                <span className="font-medium text-ink-900">Alt text:</span> {values.coverImageAlt || "—"}
+                <span className="font-medium text-ink-900">Alt text:</span>{" "}
+                {values.coverImageAlt || "—"}
               </p>
-              {errors.coverImageAlt && <p className="text-sm text-error-700">{errors.coverImageAlt}</p>}
+              {errors.coverImageAlt && (
+                <p className="text-sm text-error-700">{errors.coverImageAlt}</p>
+              )}
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-                <button type="button" className="font-medium text-brand-700 hover:underline" onClick={() => setFeaturedOpen(true)}>
+                <button
+                  type="button"
+                  className="font-medium text-brand-700 hover:underline"
+                  onClick={() => setFeaturedOpen(true)}
+                >
                   Replace image
                 </button>
                 <button
@@ -403,14 +797,36 @@ export default function PostEditor({ post, categories, authors }) {
               </div>
             </div>
           ) : (
-            <button type="button" onClick={() => setFeaturedOpen(true)} className={cn(styles.featuredEmpty, "flex flex-col items-center justify-center gap-2")}>
+            <button
+              type="button"
+              onClick={() => setFeaturedOpen(true)}
+              className={cn(
+                styles.featuredEmpty,
+                "flex flex-col items-center justify-center gap-2",
+              )}
+            >
               <Icon name="image" size={26} />
               <span className="font-medium">Set featured image</span>
-              <span className="text-xs text-ink-600">Landscape, at least 1600 × 900 px</span>
+              <span className="text-xs text-ink-600">
+                Landscape, at least 1600 × 900 px
+              </span>
             </button>
           )}
         </Card>
       </div>
+
+      <AIAssistant
+        open={aiOpen}
+        onClose={() => setAiOpen(false)}
+        session={aiSession}
+        editorApi={editorApi}
+        post={{ title: values.title, body: values.body }}
+        configured={aiConfigured}
+        onApply={(field, value) => {
+          if (field === "slug") setSlugEdited(true);
+          set(field, value);
+        }}
+      />
 
       <MediaModal
         open={featuredOpen}

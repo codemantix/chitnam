@@ -12,7 +12,7 @@ const FIELD_ORDER = ["fullName", "email", "phone", "destination", "studyLevel", 
  * @param {object} options.initialValues
  * @param {string} options.idPrefix Prefix used for field ids, to focus errors.
  */
-export function useEnquiryForm({ source, initialValues, idPrefix }) {
+export function useEnquiryForm({ source, initialValues, idPrefix, requirePhone = false }) {
   const [values, setValues] = useState(initialValues);
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("idle"); // idle | submitting | success | error
@@ -38,7 +38,7 @@ export function useEnquiryForm({ source, initialValues, idPrefix }) {
     const next = { ...values, [name]: type === "checkbox" ? checked : value };
     setValues(next);
     // After the first submit attempt, re-validate as the user corrects fields.
-    if (submittedOnce.current) setErrors(validateEnquiry(next, source).errors);
+    if (submittedOnce.current) setErrors(validateEnquiry(next, source, { requirePhone }).errors);
   };
 
   const onSubmit = async (event) => {
@@ -47,7 +47,7 @@ export function useEnquiryForm({ source, initialValues, idPrefix }) {
     submittedOnce.current = true;
     setServerMessage("");
 
-    const { errors: clientErrors } = validateEnquiry(values, source);
+    const { errors: clientErrors } = validateEnquiry(values, source, { requirePhone });
     if (hasErrors(clientErrors)) {
       setErrors(clientErrors);
       setStatus("error");

@@ -16,6 +16,7 @@ import { formatDate } from "@/utils/date";
 import { sanitizePostHtml } from "@/lib/sanitizeHtml";
 import { articleSchema, breadcrumbSchema } from "@/utils/schema";
 import styles from "@/styles/pages/BlogPost.module.css";
+import { withSiteSettings } from "@/lib/withSiteSettings";
 
 export async function getStaticPaths() {
   const slugs = await getPublishedSlugs();
@@ -26,7 +27,7 @@ export async function getStaticPaths() {
   };
 }
 
-export async function getStaticProps({ params }) {
+async function loadPageProps({ params }) {
   const post = await getPublishedPostBySlug(params.slug);
   if (!post) return { notFound: true, revalidate: 60 };
 
@@ -39,6 +40,9 @@ export async function getStaticProps({ params }) {
     revalidate: 300,
   };
 }
+
+// Adds the business details from /admin/settings/ (header, footer, contact blocks).
+export const getStaticProps = withSiteSettings(loadPageProps);
 
 export default function BlogPostPage({ post, related }) {
   const path = ROUTES.post(post.slug);

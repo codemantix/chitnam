@@ -5,10 +5,16 @@ import { ROUTES } from "@/constants/routes";
 import { LEGAL_LAST_UPDATED, privacySections } from "@/data/legal";
 import { crumbs } from "@/utils/breadcrumbs";
 import { breadcrumbSchema } from "@/utils/schema";
+import { withSiteSettings } from "@/lib/withSiteSettings";
+import { useBusiness } from "@/hooks/useBusiness";
 
 const BREADCRUMBS = crumbs({ label: "Privacy policy", href: ROUTES.privacy });
 
+// Adds the business details from /admin/settings/ (header, footer, contact blocks).
+export const getStaticProps = withSiteSettings();
+
 export default function PrivacyPolicyPage() {
+  const business = useBusiness();
   return (
     <>
       <SEO
@@ -24,7 +30,7 @@ export default function PrivacyPolicyPage() {
         title="Privacy policy"
         lead="What we collect when you contact us, why we collect it, and the choices you have."
       />
-      <LegalContent sections={privacySections} lastUpdated={LEGAL_LAST_UPDATED} />
+      <LegalContent sections={privacySections(business)} lastUpdated={LEGAL_LAST_UPDATED} />
     </>
   );
 }

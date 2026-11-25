@@ -571,3 +571,294 @@ At the client's request, the default Open Graph/Twitter image is now the
 original `team-consultation-desk.jpg` (1296×864) instead of a 1200×630 crop
 of it. The crop file `og-default.jpg` was deleted. Blog posts with a cover
 image still use their own.
+
+### Admin redesign and Gemini writing assistant (24 Nov 2026)
+
+Design (client chose "deep green sidebar"):
+- Dark brand-green floating sidebar with soft glows. The logo sits on a white
+  plate. There is a prominent **New post** button, and the active item has
+  a bright marker.
+- The mobile top bar is green, with pill navigation and a New post pill.
+- Stat cards have a tinted gradient per tone, gradient icon tiles and a
+  decorative circle.
+- The dashboard has an "AI assistant" callout (`AssistantCallout`).
+- `/dev/admin-preview/?view=dashboard` previews the dashboard without
+  signing in (dev only).
+
+Writing assistant:
+- `src/lib/gemini.js` is a REST client (key in header, JSON output, low
+  thinking level, mapped errors). `src/lib/aiPrompts.js` holds the house
+  rules and the prompts. `src/pages/api/admin/ai.js` is staff only, checks
+  origin, rate-limits and sanitises output.
+- `AIAssistant` dialog has three tabs: Write a draft (brief → editable
+  outline → preview → replace or append), Rewrite selection (6 styles) and
+  Title & SEO (Use buttons).
+- `ClassicEditor` gains `apiRef` (selection, replace range, set or append
+  content) and an **AI assist** toolbar button. `PostEditor` has a "Writing
+  assistant" sidebar card.
+- `Field` selects accept `placeholderOption={false}`.
+
+Checks:
+- 12 unit tests of the Gemini client against mocked responses: header
+  auth, JSON parsing, 429/400/404, blocked prompt, MAX_TOKENS, network
+  failure, older models without a thinking level, missing key.
+- Route: GET and POST without a session return 401, cross-origin returns
+  403 and DELETE returns 405. Lint and build pass. No Gemini code or prompts
+  in the client bundle.
+- UI was checked in the dev preview at 1440px and 375px.
+
+Not tested: a live Gemini call. That needs the client's `GEMINI_API_KEY`
+and a signed-in staff account.
+
+### Custom blog categories (24 Nov 2026)
+
+Staff can add categories from the post editor's Category box ("Add new
+category", as in WordPress). The new category is saved and selected
+straight away. Typing an existing name just selects that category.
+- `POST /api/admin/categories/` is staff only and checks origin. It
+  validates with `validateCategory`: 2–60 characters, slug generated from
+  the name, accents and "&" handled. It runs as the signed-in user, so the
+  existing RLS policy "Staff manage categories" applies, and a duplicate
+  slug returns 409.
+- `createCategory` (services/posts.js) adds the category at the end of the
+  list (`sort_order`).
+- No migration was needed: the table, policies and grants already allowed
+  staff to insert.
+- The public blog only lists categories that have at least one published
+  post, so empty new categories don't appear there.
+- The Publish card in the editor sidebar is no longer sticky, because it
+  slid over the cards beneath it while scrolling.
+
+Follow-up (same day): **Categories page** at `/admin/categories/`, linked
+in the admin navigation.
+- Add a category with an optional description.
+- Rename it or change the description inline. The slug stays fixed, so
+  existing `?category=` links keep working.
+- Reorder with up/down buttons. The change shows straight away, is saved
+  with `PUT /api/admin/categories/` and is reverted if the save fails. The
+  order sets the blog's filter order.
+- Delete. The confirmation says how many posts will become
+  "Uncategorised"; the foreign key sets their category to null.
+- Each row shows its post count and links to the blog filter.
+- APIs: `PUT /api/admin/categories/` (order),
+  `PATCH|DELETE /api/admin/categories/[id]/`. They are staff only, check
+  origin, validate ids and run as the user under RLS. Blog, home and
+  affected post pages are revalidated after each change.
+- `categories.js` moved to `categories/index.js`.
+- Dev preview: `/dev/admin-preview/?view=categories`.
+- Checked: guards return 401/403 and the page redirects to sign-in without a
+  session. Reorder rollback, the rename form and the delete warning were
+  tested in the preview, at 1440px and 375px. Lint and build pass.
+
+### Team, invitations and full settings (24 Nov 2026)
+
+Client asked for "full settings and team invite pages, professional and
+world standard". They chose all four settings sections, and email invites
+with a copy-link fallback.
+
+Database: `supabase/migrations/0004_team_and_settings.sql`
+- `staff_profiles` gains email, job title and invite columns (invited_by,
+  invited_at, accepted_at).
+- Staff can update their own name and title (column grants); a trigger
+  blocks role changes by non-admins.
+- New `settings` table (business, blog, enquiries) with RLS: business is
+  public read, the rest staff read, admins write.
+- **The client must run this migration.**
+
+Team (`/admin/team/`, `TeamManager`, `services/team.js`, `/api/admin/team`):
+- Filter tabs, member rows with avatar, role, status (Active, Invited or
+  Invite expired) and last active.
+- Admins can change roles inline, copy a link, resend or remove.
+- Invite dialog: role cards, email or link, a success state with copy and
+  WhatsApp share.
+- Permissions table showing what each role can do.
+- Safeguards: no self-removal, at least one admin, 20 invites per hour.
+
+Auth flows:
+- `/admin/set-password/` handles invites and resets: `token_hash` and
+  `code` on the server, the URL fragment in the browser. It strips tokens,
+  sends `no-referrer` and shows expired and revoked states.
+- `/admin/forgot-password/` gives the same reply whether or not the account
+  exists. Login links to it.
+- `PasswordFields` has a strength meter, a live rules list and a show/hide
+  toggle.
+
+Settings (`/admin/settings/?section=…`, `components/admin/settings/*`):
+- Left navigation (a strip on phones). Each section is a card with a sticky
+  "unsaved changes" bar (Discard / Save) and a warning before leaving.
+- Profile; Security (change password with the current one, sign out of
+  other devices or everywhere, account details).
+- Business details: phone list, WhatsApp, hours, address, six social
+  networks, live preview on wide screens.
+- Blog: default author and category, articles per page, AI on/off.
+- Enquiries: required phone, auto-close, retention.
+
+The site now uses these settings:
+- Every public page gets `business` through `withSiteSettings` and the
+  `useBusiness()` context. Header, footer, mobile menu, contact page, hero,
+  CTA, apply page, 500 page, legal text and JSON-LD all read from it.
+  `formatAddress`, `mapsUrl` and `socialLinks` moved from config/site.js to
+  utils/settings.js.
+- Saving business details revalidates every public page.
+- Contact form: phone required when set, checked in the browser and the API.
+- Blog "Show more" paging; new posts pre-fill the default author and
+  category.
+- The AI assistant API returns 403 when it is off, and the UI hides it.
+- Enquiry housekeeping runs on dashboard and enquiries loads.
+
+Checks:
+- Lint and build pass. The production crawl found 14 pages, all 200,
+  with valid JSON-LD.
+- Guards: team, settings and profile APIs return 401 without a session and
+  403 cross-origin; pages redirect to sign-in; a bad token shows the
+  expired page.
+- UI checked in dev previews (`?view=team`, `?view=settings&section=…`) at
+  1440px and 375px. Fixed the save bar not sticking, the permissions table
+  overflowing on phones and the phone label width.
+
+Not yet tested: anything against the real database. That needs migration
+0004, then a real invite (copy-link path, no email), accepting it, role
+change and removal, and saving each settings section.
+
+#### Live test against Supabase (24 Nov 2026, after migration 0004)
+
+The test used a temporary admin and two invitees (`@example.com`). No
+emails were sent. Everything was deleted afterwards, and settings were
+reset to defaults.
+
+Team and access:
+- Invite with a copied link → set-password (token verified on the server,
+  URL cleaned) → joined as editor → status "Active".
+- Editor limits:
+  - The APIs return 403 and the admin controls are hidden.
+  - Directly in the database, an editor can't change their own role
+    ("permission denied"), can't edit others (0 rows) and can't write
+    settings (0 rows).
+- Role change editor ↔ admin works.
+- Self-removal is blocked (409). A duplicate invite, even with different
+  capitalisation, is blocked (409).
+- A new copied link stops the earlier link working ("This link has
+  expired"). Removing a member deletes their login.
+
+Settings:
+- Business details: saving updated every public page immediately on the
+  production build. On `next dev`, dynamic routes fail to revalidate
+  ("Cannot find module for page"), but they render fresh on request there
+  anyway.
+- Blog:
+  - The default category is pre-selected on new posts.
+  - Turning the AI assistant off hides it (editor and dashboard) and makes
+    its API return 403.
+  - Articles per page reaches the blog.
+- Enquiries: required phone reaches the contact page and the API rejects
+  a missing phone. Housekeeping on dashboard load closed a 40-day-old
+  "contacted" enquiry, deleted a 400-day-old closed one and left a recent
+  one alone.
+
+Security:
+- Changing the password checks the current one; the old password then
+  fails and the new one works.
+- "Sign out of other devices" revoked a second session and kept this one.
+- A recovery link opens "Choose a new password", and the new password
+  works.
+
+Bugs found and fixed:
+- Submitting an auth form before the page finished loading did a plain GET
+  submit, putting field values in the URL (on the login page that would
+  include the password). Auth forms now use `method="post"` and keep the
+  submit button disabled until loaded (`useHydrated`). Every other admin
+  form also uses POST.
+- Expired or used tokens now redirect to `?expired=1`, so the token
+  doesn't stay in the address bar.
+
+### Designed confirmation dialogs (24 Nov 2026)
+
+`window.confirm()` is replaced everywhere in the admin by `ConfirmDialog`.
+`ConfirmProvider` in AdminLayout supplies it, and pages call
+`await confirm({...})` through `useConfirm()`.
+- It is a `<dialog role="alertdialog">` with a tone icon (danger: red bin;
+  warning: amber; default: green), a title, a message and an optional
+  "what will happen" list.
+- Dangerous dialogs focus Cancel first. Escape and the backdrop cancel.
+  On phones the buttons stack full width with the main action on top.
+- Used for:
+  - deleting a post ("Move to bin" is now "Delete post", because it always
+    deleted permanently);
+  - deleting a category (says how many posts become Uncategorised);
+  - removing a member or cancelling an invitation;
+  - signing out of other devices or everywhere.
+- Also fixed: the "Copy link" and "Resend" labels on the Team page no
+  longer wrap.
+
+### Admin restyle: "sunlit architectural" (24 Nov 2026)
+
+The client supplied a style reference and asked to keep the admin's
+colours, so the design language changed but the palette did not.
+- **Type:** Plus Jakarta Sans for the admin only (`lib/adminFont.js`,
+  loaded by AdminLayout and AuthLayout; the public site doesn't download
+  it).
+  - Large, light, tightly tracked headings: page titles 300 weight,
+    34–48px, −0.04em; light settings and callout titles.
+  - Stat figures are light, 44px, with tabular numbers.
+  - No heavy weights: 600 → 500 and 700 → 600 across admin CSS, including
+    `font-semibold` and `font-bold` inside the admin.
+- **Radius:** 12px for cards, buttons, inputs and lists; 18px for feature
+  surfaces (sidebar, dialogs, callout, sign-in card); pills unchanged.
+- **Elevation:** short soft shadows only (`0 0.5px 2px` / `0 2px 4px` /
+  hover `0 2px 10px`). The large diffuse shadows were removed, and so were
+  the stat cards' decorative circles and hover lift.
+- **Inputs:** soft filled surface (`rgb(0 0 0 / 0.025)`), hairline border,
+  12px radius, brand focus ring. Headline fields opt out with
+  `data-headline`.
+- **Spacing:** roomier page padding (up to 56px), 40px between page
+  sections, larger card and settings-row padding.
+- `ConfirmProvider` moved inside `.shell` so dialogs inherit the admin
+  font and tokens.
+- Checked on the dashboard, post editor, team, settings, invite dialog and
+  sign-in at 1440px and 375px. Lint and build pass. The public site still
+  uses Poppins and Inter.
+
+### No local URLs in emails (24 Nov 2026)
+
+- `emailBaseUrl()` (lib/http.js) is now the only source of the address used
+  in email links. It reads `NEXT_PUBLIC_SITE_URL`, which must be a public
+  **https** address. It returns null for localhost, loopback, private
+  ranges, `.local`/`.localhost`/`.test`/`.internal`, plain http and invalid
+  values, and when it is null no email is sent.
+- **Invitations:**
+  - The first email and resends use `emailBaseUrl`; copied links still use
+    the current site.
+  - In local mode the "send by email" option is disabled with an
+    explanation, a link is offered instead, and "Resend" is hidden; the API
+    refuses a resend too.
+- **Password reset:** moved from the browser (`window.location.origin`) to
+  `POST /api/auth/forgot-password`.
+  - It checks origin, validates input and rate-limits per IP and per email.
+  - It uses the implicit flow, so the link works on any device, and gives
+    the same reply whether or not the account exists.
+  - In local mode it returns 503 and the page shows a notice.
+- Removed the `http://localhost:3000` fallback in config/site.js; it is now
+  the public domain.
+- Docs: the Supabase **Site URL** must be set to the live domain (its
+  default is localhost:3000).
+- Tests:
+  - 15 address cases.
+  - The reset API on a production build returns 503 for a local address,
+    400 for a bad email and 403 cross-origin.
+  - No hard-coded localhost remains in the source.
+  - Lint and build pass.
+
+### Gemini "billing" error explained (24 Nov 2026)
+
+The client reported the assistant "asking for billing". A probe with the
+configured key returned **HTTP 402 "Your prepayment credits are depleted"**
+for every model, including the Flash-Lite ones. The cause is the key's
+Google project, which is linked to a prepaid billing account at $0. Per
+Google's docs such projects lose all access and aren't downgraded to the
+free tier. The code's model (`gemini-3.6-flash`) is a free-tier model, so
+no code change is needed for cost. Fix: unlink billing from the project, or
+use a key from a project without billing, or add prepaid credit.
+- `lib/gemini.js` now maps 402 and billing errors to a clear message
+  instead of a generic failure (unit test added; 13 passing).
+- DEPLOYMENT.md → Writing assistant → "Privacy and cost" rewritten with the
+  free and paid options and the 402 fix.

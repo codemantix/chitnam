@@ -8,7 +8,9 @@
  */
 
 const siteUrl = (
-  process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+  // Never a local address: if the variable is missing, fall back to the
+  // public domain so canonical URLs, sitemap and share links stay correct.
+  process.env.NEXT_PUBLIC_SITE_URL || "https://chitnampenguinslink.com.ng"
 ).replace(/\/+$/, "");
 
 export const siteConfig = {
@@ -74,22 +76,6 @@ export const siteConfig = {
   },
 };
 
-/** Social profiles in display order, for the footer and contact page. */
-export const socialLinks = [
-  { key: "facebook", label: "Facebook" },
-  { key: "instagram", label: "Instagram" },
-  { key: "linkedin", label: "LinkedIn" },
-]
-  .map((link) => ({ ...link, href: siteConfig.social[link.key] }))
-  .filter((link) => link.href);
-
-/** Google Maps search link for the office address (no API key or tracking). */
-export const mapsUrl = (address = siteConfig.address) =>
-  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    [address.street, address.locality, address.city, address.region, address.country].join(", ")
-  )}`;
-
-export const formatAddress = (address = siteConfig.address) =>
-  [address.street, address.locality, address.city, address.region]
-    .filter(Boolean)
-    .join(", ");
+// Display helpers for business details (address, maps link, social links)
+// live in utils/settings.js, because staff can now edit those details in
+// /admin/settings/. The values above are the defaults.

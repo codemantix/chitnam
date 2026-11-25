@@ -34,7 +34,7 @@ const isOneOf = (options, value) => options.some((option) => option.value === va
  * @param {object} input Raw form values.
  * @param {"apply"|"contact"} source Which form was used.
  */
-export function validateEnquiry(input = {}, source = "apply") {
+export function validateEnquiry(input = {}, source = "apply", { requirePhone = false } = {}) {
   const errors = {};
   const isApply = source === "apply";
 
@@ -62,7 +62,7 @@ export function validateEnquiry(input = {}, source = "apply") {
     const digits = data.phone.replace(/\D/g, "");
     if (!PHONE_ALLOWED.test(data.phone) || digits.length < 7 || digits.length > 15)
       errors.phone = "Please enter a valid phone number, like 0803 123 4567 or +234 803 123 4567.";
-  } else if (isApply) {
+  } else if (isApply || requirePhone) {
     errors.phone = "Please enter a phone number so an adviser can call you.";
   }
 
@@ -160,3 +160,49 @@ export function validatePost(input = {}) {
 }
 
 export const hasErrors = (errors) => Object.keys(errors).length > 0;
+
+/** Validates a new blog category from the admin editor. */
+export function validateCategory(input = {}) {
+  const errors = {};
+  const name = cleanText(input.name);
+  const data = {
+    name,
+    slug: cleanText(input.slug).toLowerCase() || slugify(name),
+    description: cleanText(input.description) || null,
+  };
+  if (name.length < 2) errors.name = "Enter a category name (at least 2 characters).";
+  else if (name.length > 60) errors.name = "Keep the name under 60 characters.";
+  if (!SLUG_PATTERN.test(data.slug) || data.slug.length > 60) errors.name = errors.name || "Use letters and numbers in the name.";
+  if (data.description && data.description.length > 300) errors.description = "Keep the description under 300 characters.";
+  return { data, errors };
+}
+
+const STAFF_ROLES = ["admin", "editor"];
+
+/** Validates a team invitation from /admin/team/. */
+export function validateInvite(input = {}) {
+  const errors = {};
+  const data = {
+    email: cleanText(input.email).toLowerCase(),
+    fullName: cleanText(input.fullName),
+    role: STAFF_ROLES.includes(input.role) ? input.role : "",
+    jobTitle: cleanText(input.jobTitle),
+    sendEmail: input.sendEmail !== false,
+  };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(data.email) || data.email.length > 254) errors.email = "Enter a valid email address.";
+  if (data.fullName.length < 2) errors.fullName = "Enter their full name.";
+  else if (data.fullName.length > 120) errors.fullName = "Keep the name under 120 characters.";
+  if (!data.role) errors.role = "Choose a role.";
+  if (data.jobTitle.length > 80) errors.jobTitle = "Keep the job title under 80 characters.";
+  return { data, errors };
+}
+
+/** Validates a staff member's own profile (name and job title). */
+export function validateProfile(input = {}) {
+  const errors = {};
+  const data = { fullName: cleanText(input.fullName), jobTitle: cleanText(input.jobTitle) };
+  if (data.fullName.length < 2) errors.fullName = "Enter your full name.";
+  else if (data.fullName.length > 120) errors.fullName = "Keep your name under 120 characters.";
+  if (data.jobTitle.length > 80) errors.jobTitle = "Keep the job title under 80 characters.";
+  return { data, errors };
+}

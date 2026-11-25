@@ -4,6 +4,7 @@ import { cn } from "@/utils/cn";
 import styles from "./StatCard.module.css";
 
 const TONES = { green: styles.green, amber: styles.amber, slate: styles.slate, blue: styles.blue };
+const CARD_TONES = { green: styles.cardGreen, amber: styles.cardAmber, slate: styles.cardSlate, blue: styles.cardBlue };
 
 /**
  * Dashboard figure with an icon, linking to the filtered list.
@@ -18,9 +19,9 @@ const TONES = { green: styles.green, amber: styles.amber, slate: styles.slate, b
  */
 export default function StatCard({ label, value, href, icon, tone = "green", hint }) {
   return (
-    <Link href={href} className={cn(styles.card, "flex items-start justify-between gap-4 p-5")}>
-      <span className="flex flex-col gap-1">
-        <span className="text-sm font-medium text-ink-600">{label}</span>
+    <Link href={href} className={cn(styles.card, CARD_TONES[tone], "flex items-start justify-between gap-4 p-6")}>
+      <span className="flex flex-col gap-2">
+        <span className="text-sm font-medium text-ink-700">{label}</span>
         <span className={styles.value}>{value.toLocaleString("en-GB")}</span>
         {hint && <span className="text-xs text-ink-600">{hint}</span>}
       </span>

@@ -1,5 +1,6 @@
 import Icon from "@/components/ui/Icon/Icon";
-import { formatAddress, mapsUrl, siteConfig, socialLinks } from "@/config/site";
+import { useBusiness } from "@/hooks/useBusiness";
+import { formatAddress, mapsUrl, socialLinksFrom, whatsappUrl } from "@/utils/settings";
 import { cn } from "@/utils/cn";
 import styles from "./ContactDetails.module.css";
 
@@ -24,13 +25,15 @@ function Row({ label, icon, children }) {
  * appear automatically once they are set in config/site.js.
  */
 export default function ContactDetails() {
-  const { contact } = siteConfig;
+  const business = useBusiness();
+  const contact = business;
+  const socialLinks = socialLinksFrom(business.social);
 
   return (
     <dl className={styles.list}>
       <Row label="Visit" icon="pin">
-        <address className="not-italic">{formatAddress()}</address>
-        <a href={mapsUrl()} target="_blank" rel="noopener noreferrer" className={styles.link}>
+        <address className="not-italic">{formatAddress(business.address)}</address>
+        <a href={mapsUrl(business.address)} target="_blank" rel="noopener noreferrer" className={styles.link}>
           Open in Google Maps<span className="sr-only"> (opens in a new tab)</span>
         </a>
       </Row>
@@ -47,7 +50,7 @@ export default function ContactDetails() {
       {contact.whatsapp && (
         <Row label="WhatsApp" icon="phone">
           <a
-            href={`https://wa.me/${contact.whatsapp.replace(/\D/g, "")}`}
+            href={whatsappUrl(contact.whatsapp)}
             target="_blank"
             rel="noopener noreferrer"
             className={styles.big}

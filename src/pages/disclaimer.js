@@ -5,10 +5,16 @@ import { ROUTES } from "@/constants/routes";
 import { disclaimerSections, LEGAL_LAST_UPDATED } from "@/data/legal";
 import { crumbs } from "@/utils/breadcrumbs";
 import { breadcrumbSchema } from "@/utils/schema";
+import { withSiteSettings } from "@/lib/withSiteSettings";
+import { useBusiness } from "@/hooks/useBusiness";
 
 const BREADCRUMBS = crumbs({ label: "Disclaimer", href: ROUTES.disclaimer });
 
+// Adds the business details from /admin/settings/ (header, footer, contact blocks).
+export const getStaticProps = withSiteSettings();
+
 export default function DisclaimerPage() {
+  const business = useBusiness();
   return (
     <>
       <SEO
@@ -19,7 +25,7 @@ export default function DisclaimerPage() {
       />
       <PageHeader
         image={{ src: "/images/photos/team-consultation-desk.jpg", position: "50% 60%" }} breadcrumbs={BREADCRUMBS} eyebrow="Legal" title="Disclaimer" />
-      <LegalContent sections={disclaimerSections} lastUpdated={LEGAL_LAST_UPDATED} />
+      <LegalContent sections={disclaimerSections(business)} lastUpdated={LEGAL_LAST_UPDATED} />
     </>
   );
 }

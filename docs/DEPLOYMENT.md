@@ -41,6 +41,8 @@ Set these in **Vercel → Project → Settings → Environment Variables**.
 | `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | token from Search Console | leave empty | Only the token, not the whole meta tag. Output only when `SITE_ENV=production`. |
 | `ENABLE_DEV_PAGES` | leave empty | `true` if needed | Serves `/dev/` QA pages. Never on production. |
 | `NEXT_PUBLIC_GA_MEASUREMENT_ID` | leave empty | | Reserved. Analytics is **not wired up**; see section 8. |
+| `GEMINI_API_KEY` | key from Google AI Studio | same or a separate key | **Server only.** Powers the admin writing assistant. Mark as "Sensitive". Without it the assistant shows a "not set up" notice. |
+| `GEMINI_MODEL` | leave empty | | Optional. Defaults to `gemini-3.6-flash`. See section 9. |
 
 If a staging deployment uses the **production** Supabase project, test
 enquiries and posts go into live data. Use a separate Supabase project for
@@ -51,8 +53,10 @@ staging if the client wants to test freely.
 ## 3. Supabase settings before launch
 
 1. **Migrations.** Run the files in `supabase/migrations/` in order
-   (`0001` → `0002` → `0003`), then `seed.sql`. Confirm `0003_rich_text_body.sql`
-   has been run: without it, long posts and the media library fail.
+   (`0001` → `0002` → `0003` → `0004`), then `seed.sql`. Without `0003`, long
+   posts and the media library fail. Without `0004`, the Team and Settings
+   pages can't save, although the site still runs on the default details in
+   `src/config/site.js`.
 2. **Authentication → Sign In / Providers**
    - Turn **off** "Allow new users to sign up". Staff accounts are created by
      an admin only (see README → Supabase setup).
@@ -225,3 +229,161 @@ privacy policy and CSP updates.
 
 Re-run `npm audit` before every deployment, and keep `next` and
 `@supabase/*` up to date.
+
+---
+
+## 9. Writing assistant (Google Gemini)
+
+Staff can use Gemini in the post editor (`/admin/posts/new/` and any post):
+
+| Tool | What it does |
+| --- | --- |
+| Write a draft | Topic, audience, tone, length and key points → optional editable outline → full draft. The result can replace the article or be added to the end, and its title used if the title is empty. |
+| Rewrite selection | Select text in the Visual editor, press **AI assist**, then choose Improve, Shorten, Expand, Simplify, Fix grammar or Friendlier. |
+| Title & SEO | Reads the article and suggests headlines, excerpt, SEO title, meta description and slug. Each has a **Use** button. |
+
+### Setup
+
+1. Create a key at https://aistudio.google.com/apikey (a Google account
+   belonging to the business, not a personal one).
+2. Add `GEMINI_API_KEY` to `.env.local` for development and to the host's
+   environment variables for production. Restart or redeploy.
+3. Optional: set `GEMINI_MODEL`. The default `gemini-3.6-flash` was the
+   current stable Flash model on 24 Nov 2026. Google retires models
+   regularly. If the assistant reports that the model wasn't found, check
+   https://aistudio.google.com/docs/models and set a current one.
+
+### How it is protected
+
+- The key is only read on the server (`src/lib/gemini.js`). It is sent to
+  Google in the `x-goog-api-key` header, never in a URL, and it isn't
+  included in any browser file.
+- `/api/admin/ai/` accepts only signed-in staff, rejects cross-site
+  requests, limits input sizes, and allows 40 requests per staff member per
+  hour (`hit_rate_limit`), which caps cost if an account is misused.
+- Everything Gemini returns is passed through the same HTML sanitiser as
+  saved posts before it reaches the editor.
+- The system prompt (`src/lib/aiPrompts.js`) applies the site's content
+  rules. It does not invent statistics, fees, testimonials or guarantees,
+  and it marks facts that need checking as `[CHECK: …]`. Staff must resolve
+  every marker before publishing.
+- Drafts can take up to a minute. The route sets `maxDuration: 120` for
+  Vercel. On a Hobby plan the limit is lower, so use short or medium
+  lengths.
+
+### Privacy and cost
+
+- Only what staff type into the assistant and the article text is sent to
+  Google. Never paste enquiry details or other personal data into it.
+- **Free tier (no billing):** the default model `gemini-3.6-flash` is free
+  of charge, within Google's free rate limits. Google may use prompts and
+  replies to improve its products. Article drafts are not confidential,
+  but never paste personal data.
+- **Paid tier:** link a billing account and **prepay** credit in AI Studio.
+  Prompts are then not used to improve Google's products.
+- **"Ran out of prepaid credit" error (HTTP 402):** the key's project is
+  linked to a prepaid billing account with a $0 balance. Google does **not**
+  fall back to the free tier for such projects; every model stops working.
+  Fix it in one of two ways:
+  1. Stay free: in AI Studio → Projects, **unlink the billing account** from
+     the key's project (or create a new project without billing and make a
+     key there), then put that key in `GEMINI_API_KEY`.
+  2. Pay: add prepaid credit in AI Studio → Billing, and set a budget
+     alert.
+
+---
+
+## 10. Team, invitations and settings
+
+### Team (`/admin/team/`)
+
+Administrators invite people by name, email and role (Editor or
+Administrator), and can change roles, resend invitations, copy a one-time
+invite link or remove access. Editors can see the team but not change it.
+Safeguards:
+- An administrator can't remove themselves.
+- The last administrator can't be removed or demoted.
+- Removing someone deletes their login. Posts they wrote stay published.
+
+How an invitation works:
+1. The admin sends the invitation. Supabase emails a link, or, with "Send
+   by email" unticked, the admin gets a one-time link to share (e.g. on
+   WhatsApp).
+2. The link opens `/admin/set-password/`, where the person confirms their
+   name and chooses a password: at least 10 characters, letters and numbers,
+   with a strength meter.
+3. They land on the dashboard. The team list changes from "Invited" to
+   "Active".
+
+Links work once and expire after 24 hours (Supabase's default). An expired
+invitation shows as "Invite expired"; use **Resend** or **Copy link**.
+
+### Emails never contain local addresses
+
+Every link inside an email (invitations, resends, password resets) is built
+from `NEXT_PUBLIC_SITE_URL` only, never from the address of the current
+request. If that variable isn't a public **https** address (localhost,
+127.0.0.1, private network, `.local`/`.test`, plain http), the site **does
+not send email at all**:
+- invitations fall back to a one-time link the admin copies;
+- "Resend" is hidden;
+- the forgot-password page explains that resets are sent from the live
+  site.
+
+Password-reset emails are sent by the server (`/api/auth/forgot-password`),
+not the browser, and they work even when opened on another device.
+
+Supabase has one more place that can put an address in an email. Check it
+before launch:
+- **Authentication → URL Configuration → Site URL** must be
+  `https://chitnampenguinslink.com.ng`. Supabase's default is
+  `http://localhost:3000`. It's used by `{{ .SiteURL }}` in templates, and
+  as a fallback when a link's address isn't in the allowed Redirect URLs.
+- Keep `https://chitnampenguinslink.com.ng/admin/**` in **Redirect URLs**.
+  A `localhost` entry is only needed for copying invite links during local
+  development; emails never use it.
+
+### Required Supabase settings
+
+1. **Authentication → URL Configuration → Redirect URLs** must include
+   `https://chitnampenguinslink.com.ng/admin/**`. For local testing, also
+   add `http://localhost:3003/admin/**`. Without it, invitation and reset
+   links fail.
+2. **Authentication → Emails → SMTP Settings.** Set up custom SMTP (the
+   domain mailbox, Resend, Brevo…). Supabase's built-in sender only allows a
+   few emails per hour and is meant for testing. Until SMTP is set up, use
+   **Copy link** for invitations.
+3. **Authentication → Emails → Templates → Invite user** (optional but
+   recommended). Change the link to
+   `{{ .SiteURL }}/admin/set-password/?token_hash={{ .TokenHash }}&type=invite`
+   so it's verified on the server. The default template also works.
+4. **Authentication → Emails → Templates → Reset password** (optional).
+   Use `{{ .SiteURL }}/admin/set-password/?token_hash={{ .TokenHash }}&type=recovery&mode=reset`.
+5. **Authentication → Providers → Email.** Keep "Allow new users to sign up"
+   **off**. Invitations still work, because only administrators can create
+   accounts.
+6. **Authentication → Policies → Password.** Turn on "Prevent use of leaked
+   passwords" (paid plans) and set the minimum length to 10.
+
+Staff can reset their own password from **Forgotten your password?** on the
+sign-in page.
+
+### Settings (`/admin/settings/`)
+
+| Section | Who | What it controls |
+| --- | --- | --- |
+| Profile | everyone | Own name and job title |
+| Password & security | everyone | Change password (current password required), sign out of other devices or everywhere |
+| Business details | admins | Email, phone numbers, WhatsApp, office hours, address, social links. Used on every public page (header, footer, contact page, legal pages, structured data). Saving refreshes all public pages immediately. |
+| Blog | admins | Default author and category for new posts, articles per page (blog "Show more"), AI assistant on/off for the team |
+| Enquiries | admins | Phone required on the contact form; auto-close "Contacted" enquiries after N days; delete closed enquiries after N months (data protection) |
+
+Settings are stored in the `settings` table (migration 0004). Business
+details are readable by the public, because the website shows them. Blog
+and enquiry settings are readable by staff only. Only admins can write
+(RLS). The values in `src/config/site.js` are the defaults until something
+is saved.
+
+Enquiry housekeeping (auto-close and deletion) runs when staff open the
+dashboard or the enquiries list, so no scheduled job is needed. It never
+deletes anything unless an admin has chosen a retention period.

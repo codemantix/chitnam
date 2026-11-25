@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import AuthLayout from "@/components/admin/AuthLayout/AuthLayout";
 import Field from "@/components/forms/Field/Field";
@@ -7,6 +8,7 @@ import Button from "@/components/ui/Button/Button";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { getBrowserClient } from "@/lib/supabase/browserClient";
 import { getStaffContext } from "@/services/auth";
+import { useHydrated } from "@/hooks/useHydrated";
 
 /** Only allow redirects back into the admin area (prevents open redirects). */
 const safeNext = (next) => (typeof next === "string" && /^\/admin\/(?!\/)/.test(next) ? next : "/admin/");
@@ -24,6 +26,7 @@ export async function getServerSideProps({ req, res, query }) {
 }
 
 export default function AdminLoginPage({ notConfigured, notStaff }) {
+  const hydrated = useHydrated();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -59,7 +62,7 @@ export default function AdminLoginPage({ notConfigured, notStaff }) {
           Add the Supabase environment variables and reload. See the README.
         </Alert>
       ) : (
-        <form noValidate onSubmit={onSubmit} className="flex flex-col gap-5">
+        <form noValidate method="post" onSubmit={onSubmit} className="flex flex-col gap-5">
           {message && <Alert tone="error" title={message} />}
           <Field
             id="email"
@@ -79,11 +82,13 @@ export default function AdminLoginPage({ notConfigured, notStaff }) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <Button type="submit" size="lg" loading={status === "submitting"} className="mt-1 w-full">
+          <Button type="submit" size="lg" loading={status === "submitting"} disabled={!hydrated} className="mt-1 w-full">
             {status === "submitting" ? "Signing in…" : "Sign in"}
           </Button>
-          <p className="text-center text-xs text-ink-600">
-            Forgotten your password? Ask an administrator to send a reset link from Supabase.
+          <p className="text-center text-sm">
+            <Link href="/admin/forgot-password/" className="font-medium text-brand-700 hover:underline">
+              Forgotten your password?
+            </Link>
           </p>
         </form>
       )}

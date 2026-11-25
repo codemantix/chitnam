@@ -1,4 +1,5 @@
 import { siteConfig } from "@/config/site";
+import { useBusiness } from "@/hooks/useBusiness";
 import HeroCarousel from "./HeroCarousel";
 import styles from "./HeroSection.module.css";
 
@@ -11,7 +12,7 @@ import styles from "./HeroSection.module.css";
  * @param {number} [props.autoplayMs=7000] Time per slide; 0 turns autoplay off.
  */
 export default function HeroSection({ slides, autoplayMs = 7000 }) {
-  const phone = siteConfig.contact.phones[0];
+  const phone = useBusiness().phones[0];
 
   return (
     <section aria-labelledby="hero-heading">

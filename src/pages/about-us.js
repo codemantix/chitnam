@@ -11,17 +11,23 @@ import { aboutContent } from "@/data/about";
 import { publishedTeam } from "@/data/team";
 import { crumbs } from "@/utils/breadcrumbs";
 import { breadcrumbSchema, organizationSchema } from "@/utils/schema";
+import { withSiteSettings } from "@/lib/withSiteSettings";
+import { useBusiness } from "@/hooks/useBusiness";
 
 const BREADCRUMBS = crumbs({ label: "About us", href: ROUTES.about });
 
+// Adds the business details from /admin/settings/ (header, footer, contact blocks).
+export const getStaticProps = withSiteSettings();
+
 export default function AboutPage() {
+  const business = useBusiness();
   return (
     <>
       <SEO
         title="About us"
         description="Chitnam Penguins Links is a study abroad consultancy founded in 2015 in Port Harcourt, owned and run by three partners with long experience in education placement."
         path={ROUTES.about}
-        jsonLd={[organizationSchema(), breadcrumbSchema(BREADCRUMBS)]}
+        jsonLd={[organizationSchema(business), breadcrumbSchema(BREADCRUMBS)]}
       />
       <PageHeader
         image={{ src: "/images/photos/team-consultation-desk.jpg", position: "50% 40%" }}

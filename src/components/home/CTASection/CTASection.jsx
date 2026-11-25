@@ -1,6 +1,6 @@
 import Button from "@/components/ui/Button/Button";
 import Container from "@/components/ui/Container/Container";
-import { siteConfig } from "@/config/site";
+import { useBusiness } from "@/hooks/useBusiness";
 import { ROUTES } from "@/constants/routes";
 import { cn } from "@/utils/cn";
 import styles from "./CTASection.module.css";
@@ -17,7 +17,7 @@ export default function CTASection({
   title = "Start your study abroad journey today!",
   text = "Tell us what you want to study and when. An adviser will get back to you to arrange a consultation.",
 }) {
-  const phone = siteConfig.contact.phones[0];
+  const phone = useBusiness().phones[0];
 
   return (
     <section aria-labelledby="cta-heading" className={cn(styles.band, "py-14 md:py-16")}>

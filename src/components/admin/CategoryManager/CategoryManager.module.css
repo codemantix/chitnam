@@ -1,0 +1,130 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem 0 0.5rem;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  border-top: 1px solid var(--admin-border, #e5e9e1);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.row:first-child {
+  border-top: 0;
+}
+
+.row:hover {
+  background-color: var(--admin-muted, #f7f8f5);
+}
+
+.rowEditing,
+.rowEditing:hover {
+  align-items: flex-start;
+  background-color: #f3fbf6;
+}
+
+.order {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.position {
+  display: inline-grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--brand-800);
+  background-color: var(--brand-50);
+  border-radius: 999px;
+}
+
+.slug {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.75rem;
+  color: var(--ink-400);
+}
+
+.count {
+  flex-shrink: 0;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--brand-800);
+  background-color: var(--brand-50);
+  border-radius: 999px;
+}
+
+.countEmpty {
+  color: var(--ink-600);
+  background-color: #f1f3ee;
+}
+
+.iconBtn {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  color: var(--ink-600);
+  border-radius: 10px;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.iconBtn:hover:not(:disabled) {
+  color: var(--ink-900);
+  background-color: #eef1ea;
+}
+
+.iconBtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.danger:hover:not(:disabled) {
+  color: var(--error-700, #b42318);
+  background-color: #fdecea;
+}
+
+.input {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.9375rem;
+  background-color: #fff;
+  border: 1px solid var(--admin-border, #e5e9e1);
+  border-radius: 12px;
+}
+
+.input:focus {
+  border-color: var(--brand-600);
+  outline: 2px solid rgb(23 177 86 / 0.2);
+  outline-offset: 0;
+}
+
+/* Phones: name and description use the full width; post count and
+   actions move to their own line under them. */
+@media (max-width: 639px) {
+  .row {
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+  }
+
+  .info {
+    flex-basis: calc(100% - 2.75rem);
+  }
+
+  .meta {
+    width: 100%;
+    justify-content: space-between;
+    padding-left: 2.75rem;
+  }
+}

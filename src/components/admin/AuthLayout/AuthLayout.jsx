@@ -5,6 +5,7 @@ import Icon from "@/components/ui/Icon/Icon";
 import { siteConfig } from "@/config/site";
 import adminStyles from "@/components/admin/AdminLayout/AdminLayout.module.css";
 import { cn } from "@/utils/cn";
+import { adminFont } from "@/lib/adminFont";
 import styles from "./AuthLayout.module.css";
 
 /**
@@ -16,7 +17,7 @@ import styles from "./AuthLayout.module.css";
  */
 export default function AuthLayout({ title, subtitle, children }) {
   return (
-    <div className={cn(adminStyles.shell, styles.page)}>
+    <div className={cn(adminStyles.shell, adminFont.variable, styles.page)}>
       <Head>
         <title>{`${title} · Chitnam admin`}</title>
         <meta name="robots" content="noindex, nofollow" />

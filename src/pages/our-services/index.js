@@ -9,8 +9,12 @@ import { processSteps } from "@/data/home";
 import { services } from "@/data/services";
 import { crumbs } from "@/utils/breadcrumbs";
 import { breadcrumbSchema } from "@/utils/schema";
+import { withSiteSettings } from "@/lib/withSiteSettings";
 
 const BREADCRUMBS = crumbs({ label: "Our services", href: ROUTES.services });
+
+// Adds the business details from /admin/settings/ (header, footer, contact blocks).
+export const getStaticProps = withSiteSettings();
 
 export default function ServicesPage() {
   return (

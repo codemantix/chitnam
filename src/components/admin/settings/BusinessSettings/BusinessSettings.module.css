@@ -1,0 +1,84 @@
+.remove {
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2.5rem;
+  color: var(--ink-600);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.remove:hover {
+  color: #b42318;
+  background-color: #fdecea;
+}
+
+.add {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  align-self: flex-start;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--brand-700);
+  cursor: pointer;
+}
+
+.add:hover {
+  text-decoration: underline;
+}
+
+.socialRow {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.socialLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ink-700);
+}
+
+.preview {
+  position: sticky;
+  top: 1.5rem;
+  display: none;
+  padding: 1.25rem;
+  background-color: #fff;
+  border: 1px dashed #cfd8ca;
+  border-radius: var(--radius-lg, 12px);
+}
+
+@media (min-width: 1536px) {
+  .preview {
+    display: block;
+  }
+}
+
+.previewLabel {
+  margin-bottom: 0.9rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+}
+
+.previewTerm {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-600);
+}
+
+.chip {
+  padding: 0.15rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--brand-800);
+  background-color: var(--brand-50);
+  border-radius: 999px;
+}

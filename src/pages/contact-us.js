@@ -9,17 +9,28 @@ import { crumbs } from "@/utils/breadcrumbs";
 import { cn } from "@/utils/cn";
 import { breadcrumbSchema, localBusinessSchema } from "@/utils/schema";
 import styles from "@/styles/pages/Contact.module.css";
+import { withSiteSettings } from "@/lib/withSiteSettings";
+import { getAdminClient } from "@/lib/supabase/adminClient";
+import { getSetting } from "@/services/settings";
+import { useBusiness } from "@/hooks/useBusiness";
 
 const BREADCRUMBS = crumbs({ label: "Contact us", href: ROUTES.contact });
 
-export default function ContactPage() {
+// Adds the business details from /admin/settings/ (header, footer, contact blocks).
+export const getStaticProps = withSiteSettings(async () => {
+  const { requirePhoneOnContact } = await getSetting(getAdminClient(), "enquiries");
+  return { props: { requirePhone: requirePhoneOnContact } };
+});
+
+export default function ContactPage({ requirePhone = false }) {
+  const business = useBusiness();
   return (
     <>
       <SEO
         title="Contact us"
         description="Contact Chitnam Penguins Links in Rumuigbo, Port Harcourt. Call, email or visit our office, or send a message to a study abroad adviser."
         path={ROUTES.contact}
-        jsonLd={[localBusinessSchema(), breadcrumbSchema(BREADCRUMBS)]}
+        jsonLd={[localBusinessSchema(business), breadcrumbSchema(BREADCRUMBS)]}
       />
       <PageHeader
         image={{ src: "/images/banners/adviser-on-phone-call.jpg", position: "50% 35%" }}
@@ -50,7 +61,7 @@ export default function ContactPage() {
               instead.
             </p>
           </div>
-          <EnquiryForm variant="contact" />
+          <EnquiryForm variant="contact" requirePhone={requirePhone} />
         </div>
       </Section>
     </>

@@ -1,0 +1,240 @@
+/* Gemini writing assistant. Violet accents mark AI features; brand green
+   stays for primary actions. */
+
+.banner {
+  padding: 0.75rem 1rem;
+  color: #2a1d5c;
+  background-image: linear-gradient(120deg, #ecfdf3 0%, #f1edff 100%);
+  border: 1px solid #e3ddfb;
+  border-radius: 12px;
+}
+
+.bannerIcon {
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  color: #fff;
+  background-image: linear-gradient(135deg, #17b156, #6d4fd8);
+  border-radius: 999px;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background-color: #f1f3ee;
+  border-radius: 12px;
+}
+
+.tab {
+  display: inline-flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ink-600);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+
+.tab:hover {
+  color: var(--ink-900);
+}
+
+.tabActive {
+  color: var(--ink-900);
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgb(21 24 27 / 0.1);
+}
+
+.tabActive svg {
+  color: #6d4fd8;
+}
+
+/* ----- Working state ----- */
+.working {
+  padding: 1.5rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #2a1d5c;
+  background-color: #faf9ff;
+  border: 1px dashed #d9d2f7;
+  border-radius: 12px;
+}
+
+.orb {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  background: conic-gradient(from 0deg, #17b156, #6d4fd8, #17b156);
+  border-radius: 999px;
+  mask: radial-gradient(circle, transparent 45%, #000 47%);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orb {
+    animation: none;
+  }
+}
+
+/* ----- Outline ----- */
+.outlineItem {
+  padding: 0.75rem;
+  background-color: #fff;
+  border: 1px solid #e5e9e1;
+  border-radius: 12px;
+}
+
+.outlineNum {
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-top: 0.15rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #4b3aa6;
+  background-color: #f1edff;
+  border-radius: 999px;
+}
+
+.outlineInput {
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  font-weight: 500;
+  color: var(--ink-900);
+  border: 1px solid transparent;
+  border-radius: 8px;
+}
+
+.outlineInput:hover,
+.outlineInput:focus {
+  border-color: #d9d2f7;
+  outline: none;
+}
+
+.iconBtn {
+  display: inline-grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  color: var(--ink-600);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.iconBtn:hover:not(:disabled) {
+  color: var(--ink-900);
+  background-color: #f1f3ee;
+}
+
+.iconBtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* ----- Previews ----- */
+.preview {
+  max-height: 22rem;
+  padding: 1.25rem 1.5rem;
+  overflow-y: auto;
+  background-color: #fff;
+  border: 1px solid #e5e9e1;
+  border-radius: 12px;
+}
+
+.note {
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  color: #7a4b00;
+}
+
+.note svg {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.label {
+  margin-bottom: 0.4rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--ink-700, #3a4046);
+}
+
+.quote {
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
+  color: var(--ink-700, #3a4046);
+  white-space: pre-wrap;
+  background-color: #f7f8f5;
+  border-left: 3px solid #6d4fd8;
+  border-radius: 0 10px 10px 0;
+}
+
+.chip {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ink-900);
+  background-color: #fff;
+  border: 1px solid #e5e9e1;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.chip:hover {
+  border-color: #6d4fd8;
+}
+
+.chipActive {
+  color: #fff;
+  background-color: #6d4fd8;
+  border-color: #6d4fd8;
+}
+
+.suggestion {
+  padding: 0.9rem 1rem;
+  background-color: #fff;
+  border: 1px solid #e5e9e1;
+  border-radius: 12px;
+}
+
+.use {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--brand-800);
+  background-color: #e8f6ee;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.use:hover:not(:disabled) {
+  color: #fff;
+  background-color: var(--brand-700);
+}
+
+.useDone {
+  color: var(--ink-600);
+  background-color: #f1f3ee;
+  cursor: default;
+}

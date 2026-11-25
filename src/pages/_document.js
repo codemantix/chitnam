@@ -9,8 +9,9 @@ export default function Document() {
     <Html lang="en-NG" data-scroll-behavior="smooth">
       <Head>
         <meta name="theme-color" content="#ffffff" />
-        {/* Interim icons cropped from the raster logo; replace when the SVG original is supplied. */}
+        {/* Rounded icons built from the logo mark by scripts/generate-favicons.cjs. */}
         <link rel="icon" href="/icon-32.png" type="image/png" sizes="32x32" />
+        <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         {/* Google Search Console ownership check, only on the live site. */}
         {siteConfig.indexable && siteConfig.analytics.googleSiteVerification && (

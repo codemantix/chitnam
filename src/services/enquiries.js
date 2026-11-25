@@ -47,3 +47,33 @@ export async function updateEnquiry(client, id, { status, staffNotes }) {
   const { error } = await client.from("enquiries").update(patch).eq("id", id);
   if (error) throw new Error(error.message);
 }
+
+/**
+ * Applies Settings → Enquiries housekeeping (service-role client):
+ *  - "Contacted" enquiries older than N days → "Closed"
+ *  - "Closed" enquiries older than N months → permanently deleted
+ * Runs when staff open the dashboard or enquiries list, so no scheduled job
+ * is needed. Never throws: housekeeping must not break the admin pages.
+ *
+ * @returns {Promise<{ closed: number, deleted: number }>}
+ */
+export async function applyEnquiryHousekeeping(adminClient, { autoCloseAfterDays = 0, deleteClosedAfterMonths = 0 } = {}) {
+  const result = { closed: 0, deleted: 0 };
+  if (!adminClient) return result;
+  try {
+    if (autoCloseAfterDays > 0) {
+      const before = new Date(Date.now() - autoCloseAfterDays * 86400000).toISOString();
+      const { data } = await adminClient.from("enquiries").update({ status: "closed" }).eq("status", "contacted").lt("created_at", before).select("id");
+      result.closed = data?.length || 0;
+    }
+    if (deleteClosedAfterMonths > 0) {
+      const cutoff = new Date();
+      cutoff.setMonth(cutoff.getMonth() - deleteClosedAfterMonths);
+      const { data } = await adminClient.from("enquiries").delete().eq("status", "closed").lt("created_at", cutoff.toISOString()).select("id");
+      result.deleted = data?.length || 0;
+    }
+  } catch (error) {
+    console.error("[enquiries] housekeeping:", error.message);
+  }
+  return result;
+}

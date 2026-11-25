@@ -97,6 +97,65 @@ export async function getCategories(client = getPublicClient()) {
   return data;
 }
 
+/**
+ * Adds a blog category (staff client; RLS allows staff only). It goes to the
+ * end of the list. Throws the Supabase error (23505 = slug already used).
+ */
+export async function createCategory(client, { name, slug, description }) {
+  const { data: last } = await client.from("categories").select("sort_order").order("sort_order", { ascending: false }).limit(1);
+  const sortOrder = (last?.[0]?.sort_order ?? 0) + 1;
+  const { data, error } = await client
+    .from("categories")
+    .insert({ name, slug, description: description || null, sort_order: sortOrder })
+    .select("id, slug, name, description")
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+/** Categories in display order, each with the number of posts using it (staff client). */
+export async function listCategoriesWithCounts(client) {
+  const { data, error } = await client
+    .from("categories")
+    .select("id, slug, name, description, sort_order, posts(count)")
+    .order("sort_order")
+    .order("name");
+  if (error) throw error;
+  return data.map(({ posts, ...category }) => ({ ...category, postCount: posts?.[0]?.count ?? 0 }));
+}
+
+/** Renames a category / changes its description. The slug stays the same so links keep working. */
+export async function updateCategory(client, id, { name, description }) {
+  const { data, error } = await client
+    .from("categories")
+    .update({ name, description: description || null })
+    .eq("id", id)
+    .select("id, slug, name, description, sort_order")
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+/** Deletes a category. Its posts become uncategorised (foreign key: on delete set null). */
+export async function deleteCategory(client, id) {
+  const { error } = await client.from("categories").delete().eq("id", id);
+  if (error) throw error;
+}
+
+/** Saves a new order: ids[0] gets sort_order 1, and so on. */
+export async function reorderCategories(client, ids) {
+  const results = await Promise.all(ids.map((id, index) => client.from("categories").update({ sort_order: index + 1 }).eq("id", id)));
+  const failed = results.find((r) => r.error);
+  if (failed) throw failed.error;
+}
+
+/** Slugs of posts in a category, so their pages can be refreshed after a rename. */
+export async function getPostSlugsByCategory(client, categoryId) {
+  const { data, error } = await client.from("posts").select("slug").eq("category_id", categoryId);
+  if (error) return [];
+  return data.map((row) => row.slug);
+}
+
 export async function getAuthors(client) {
   const { data, error } = await client.from("authors").select("id, slug, name").order("name");
   if (error) return [];

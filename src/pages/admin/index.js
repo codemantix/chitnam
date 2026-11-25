@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AdminLayout from "@/components/admin/AdminLayout/AdminLayout";
+import AssistantCallout from "@/components/admin/AssistantCallout/AssistantCallout";
 import Card from "@/components/admin/Card/Card";
 import Icon from "@/components/ui/Icon/Icon";
 import StatCard from "@/components/admin/StatCard/StatCard";
@@ -7,7 +8,9 @@ import Alert from "@/components/ui/Alert/Alert";
 import Button from "@/components/ui/Button/Button";
 import { INTEREST_OPTIONS, labelFor } from "@/constants/enquiry";
 import { withStaff } from "@/services/auth";
-import { countEnquiriesByStatus, listEnquiries } from "@/services/enquiries";
+import { applyEnquiryHousekeeping, countEnquiriesByStatus, listEnquiries } from "@/services/enquiries";
+import { getSetting } from "@/services/settings";
+import { getAdminClient } from "@/lib/supabase/adminClient";
 import { countPostsByStatus, listAllPosts } from "@/services/posts";
 import { cn } from "@/utils/cn";
 import { formatDate } from "@/utils/date";
@@ -20,6 +23,8 @@ function greeting() {
 
 export const getServerSideProps = withStaff(async (ctx, { supabase }) => {
   try {
+    const [enquirySettings, blogSettings] = await Promise.all([getSetting(supabase, "enquiries"), getSetting(supabase, "blog")]);
+    await applyEnquiryHousekeeping(getAdminClient(), enquirySettings);
     const [enquiries, posts, recentEnquiries, allPosts] = await Promise.all([
       countEnquiriesByStatus(supabase),
       countPostsByStatus(supabase),
@@ -27,7 +32,7 @@ export const getServerSideProps = withStaff(async (ctx, { supabase }) => {
       listAllPosts(supabase),
     ]);
     return {
-      props: { enquiries, posts, recentEnquiries, recentPosts: allPosts.slice(0, 5), greeting: greeting(), loadError: false },
+      props: { enquiries, posts, recentEnquiries, recentPosts: allPosts.slice(0, 5), greeting: greeting(), loadError: false, aiEnabled: blogSettings.aiAssistantEnabled },
     };
   } catch (error) {
     console.error("[admin] dashboard:", error.message);
@@ -35,7 +40,7 @@ export const getServerSideProps = withStaff(async (ctx, { supabase }) => {
   }
 });
 
-export default function AdminDashboard({ staff, notConfigured, counts, enquiries, posts, recentEnquiries, recentPosts, greeting: hello, loadError }) {
+export default function AdminDashboard({ staff, notConfigured, counts, enquiries, posts, recentEnquiries, recentPosts, greeting: hello, loadError, aiEnabled = true }) {
   const firstName = staff?.name?.split(" ")[0];
 
   return (
@@ -55,6 +60,7 @@ export default function AdminDashboard({ staff, notConfigured, counts, enquiries
         <Alert tone="error" title="The dashboard couldn't load. Refresh the page to try again." />
       ) : (
         <div className="flex flex-col gap-6">
+          {aiEnabled && <AssistantCallout />}
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard label="New enquiries" value={enquiries.new} href="/admin/enquiries/?status=new" icon="inbox" tone="green" hint="Waiting for a reply" />
             <StatCard label="In progress" value={enquiries.contacted} href="/admin/enquiries/?status=contacted" icon="phone" tone="amber" hint="Contacted" />
@@ -147,3 +153,4 @@ export default function AdminDashboard({ staff, notConfigured, counts, enquiries
 }
 
 AdminDashboard.getLayout = (page) => page;
+

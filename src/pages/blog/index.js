@@ -1,4 +1,6 @@
 import BlogExplorer from "@/components/blog/BlogExplorer/BlogExplorer";
+import { getAdminClient } from "@/lib/supabase/adminClient";
+import { getSetting } from "@/services/settings";
 import CTASection from "@/components/home/CTASection/CTASection";
 import PageHeader from "@/components/ui/PageHeader/PageHeader";
 import Prose from "@/components/ui/Prose/Prose";
@@ -8,20 +10,24 @@ import { ROUTES } from "@/constants/routes";
 import { getCategories, getPublishedPosts } from "@/services/posts";
 import { crumbs } from "@/utils/breadcrumbs";
 import { breadcrumbSchema } from "@/utils/schema";
+import { withSiteSettings } from "@/lib/withSiteSettings";
 
 const BREADCRUMBS = crumbs({ label: "Blog", href: ROUTES.blog });
 
 // Rebuilt in the background at most every 5 minutes, and immediately when
 // staff publish or update a post (on-demand revalidation in the admin API).
-export async function getStaticProps() {
-  const [posts, categories] = await Promise.all([getPublishedPosts(), getCategories()]);
+async function loadPageProps() {
+  const [posts, categories, blogSettings] = await Promise.all([getPublishedPosts(), getCategories(), getSetting(getAdminClient(), "blog")]);
   return {
-    props: { posts, categories: categories.map(({ slug, name }) => ({ slug, name })) },
+    props: { posts, categories: categories.map(({ slug, name }) => ({ slug, name })), perPage: blogSettings.postsPerPage },
     revalidate: 300,
   };
 }
 
-export default function BlogPage({ posts, categories }) {
+// Adds the business details from /admin/settings/ (header, footer, contact blocks).
+export const getStaticProps = withSiteSettings(loadPageProps);
+
+export default function BlogPage({ posts, categories, perPage }) {
   const hasPosts = posts.length > 0;
 
   return (
@@ -44,7 +50,7 @@ export default function BlogPage({ posts, categories }) {
 
       <Section>
         {hasPosts ? (
-          <BlogExplorer posts={posts} categories={categories} />
+          <BlogExplorer posts={posts} categories={categories} perPage={perPage} />
         ) : (
           <Prose>
             <h2>Our first articles are on the way</h2>

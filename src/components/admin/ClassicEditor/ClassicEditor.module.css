@@ -3,9 +3,11 @@
   flex-direction: column;
   background-color: #fff;
   border: 1px solid var(--admin-border, #e5e9e1);
-  border-radius: 20px;
+  border-radius: 12px;
   box-shadow: var(--admin-shadow);
-  overflow: hidden;
+  /* clip, not hidden: hidden would make this a scroll container and stop
+     the toolbar from sticking while the page scrolls. */
+  overflow: clip;
   transition: box-shadow var(--duration-base) var(--ease-out);
 }
 
@@ -70,6 +72,22 @@
   color: var(--brand-600);
 }
 
+/* Gemini assistant: soft green-to-violet tint so it reads as "AI". */
+.assistButton {
+  color: #3b2a7a;
+  background-image: linear-gradient(135deg, #ecfdf3, #f1edff);
+  border-color: #d9d2f7;
+}
+
+.assistButton svg {
+  color: #6d4fd8;
+}
+
+.assistButton:hover {
+  color: #2a1d5c;
+  border-color: #6d4fd8;
+}
+
 .tabs {
   display: inline-flex;
   padding: 0.25rem;
@@ -97,7 +115,9 @@
 
 .toolbar {
   position: sticky;
-  top: 0;
+  /* Sits just below the mobile top bar, or near the top of the window on
+     desktop, so the formatting tools stay in reach through long posts. */
+  top: var(--admin-sticky-top, 0.5rem);
   z-index: 2;
   display: flex;
   flex-direction: column;
@@ -106,7 +126,26 @@
   padding: 0.375rem;
   background-color: #f7f8f5;
   border: 1px solid #eef0eb;
-  border-radius: 14px;
+  border-radius: 12px;
+}
+
+/* White backing so text scrolling under the toolbar doesn't show in the
+   gaps beside and above it. The wrapper clips it to the editor's edges. */
+.toolbar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  box-shadow:
+    -0.25rem 0 0 0.5rem #fff,
+    0.25rem 0 0 0.5rem #fff;
+  pointer-events: none;
+}
+
+/* In full screen the editing area scrolls on its own. */
+.fullscreen .toolbar {
+  top: 0;
 }
 
 .row2 {
@@ -257,7 +296,7 @@
 
 .status strong {
   color: var(--ink-900);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 @keyframes spin {

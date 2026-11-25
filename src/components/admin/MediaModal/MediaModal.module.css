@@ -3,7 +3,7 @@
   align-self: flex-start;
   padding: 0.25rem;
   background-color: #f1f3ee;
-  border-radius: 14px;
+  border-radius: 12px;
 }
 
 .tab {
@@ -24,7 +24,7 @@
 .dropzone {
   min-height: 22rem;
   border: 2px dashed #d4dacd;
-  border-radius: 20px;
+  border-radius: 12px;
   background-color: #fafbf8;
   transition:
     border-color var(--duration-fast) var(--ease-out),
@@ -58,7 +58,7 @@
   aspect-ratio: 1;
   overflow: hidden;
   background-color: #f1f3ee;
-  border-radius: 14px;
+  border-radius: 12px;
   cursor: pointer;
   transition:
     transform var(--duration-fast) var(--ease-out),
@@ -91,7 +91,7 @@
 
 .skeleton {
   aspect-ratio: 1;
-  border-radius: 14px;
+  border-radius: 12px;
   background: linear-gradient(90deg, #eef0eb 0%, #f6f7f4 50%, #eef0eb 100%);
   background-size: 200% 100%;
   animation: shimmer 1.2s ease-in-out infinite;
@@ -100,13 +100,13 @@
 .empty {
   color: var(--ink-600);
   background-color: #fafbf8;
-  border-radius: 20px;
+  border-radius: 12px;
 }
 
 .details {
   min-height: 0;
   background-color: #f7f8f5;
-  border-radius: 20px;
+  border-radius: 12px;
 }
 
 .preview {
@@ -114,7 +114,7 @@
   aspect-ratio: 4 / 3;
   overflow: hidden;
   background-color: #eef0eb;
-  border-radius: 14px;
+  border-radius: 12px;
 }
 
 @keyframes shimmer {

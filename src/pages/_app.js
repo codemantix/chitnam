@@ -1,5 +1,7 @@
 import { Inter, Poppins } from "next/font/google";
 import { withPageLayout } from "@/components/layout/PageLayout/PageLayout";
+import { BusinessContext } from "@/hooks/useBusiness";
+import { DEFAULTS } from "@/utils/settings";
 import "@/styles/globals.css";
 
 // Self-hosted at build time by next/font: no request to Google at runtime,
@@ -31,7 +33,9 @@ export default function App({ Component, pageProps }) {
           --font-inter: ${inter.style.fontFamily};
         }
       `}</style>
-      {getLayout(<Component {...pageProps} />)}
+      <BusinessContext.Provider value={pageProps.business || DEFAULTS.business}>
+        {getLayout(<Component {...pageProps} />)}
+      </BusinessContext.Provider>
     </>
   );
 }

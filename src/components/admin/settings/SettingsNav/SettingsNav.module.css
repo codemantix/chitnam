@@ -1,0 +1,89 @@
+.nav {
+  display: flex;
+  gap: 1.25rem;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.groupLabel {
+  padding: 0 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+}
+
+.list {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--ink-700);
+  white-space: nowrap;
+  text-decoration: none;
+  border-radius: 12px;
+  transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+
+.link svg {
+  color: var(--ink-400);
+}
+
+.link:hover {
+  color: var(--ink-900);
+  background-color: #eaeee6;
+}
+
+.active,
+.active:hover {
+  color: var(--brand-800);
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgb(21 24 27 / 0.08);
+}
+
+.active svg {
+  color: var(--brand-600);
+}
+
+/* Phones/tablets: one horizontal scrolling strip. */
+@media (max-width: 1023px) {
+  .nav {
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    scrollbar-width: none;
+  }
+  .nav::-webkit-scrollbar {
+    display: none;
+  }
+  .groupLabel {
+    display: none;
+  }
+  .group + .group {
+    padding-left: 1.25rem;
+    border-left: 1px solid var(--admin-border, #e5e9e1);
+  }
+}
+
+/* Desktop: a vertical list. */
+@media (min-width: 1024px) {
+  .nav {
+    position: sticky;
+    top: 1.5rem;
+    flex-direction: column;
+  }
+  .list {
+    flex-direction: column;
+  }
+}

@@ -6,7 +6,9 @@ import Icon from "@/components/ui/Icon/Icon";
 import Alert from "@/components/ui/Alert/Alert";
 import { ENQUIRY_STATUS_OPTIONS } from "@/constants/enquiry";
 import { withStaff } from "@/services/auth";
-import { countEnquiriesByStatus, listEnquiries } from "@/services/enquiries";
+import { countEnquiriesByStatus, listEnquiries, applyEnquiryHousekeeping } from "@/services/enquiries";
+import { getSetting } from "@/services/settings";
+import { getAdminClient } from "@/lib/supabase/adminClient";
 import { cn } from "@/utils/cn";
 import styles from "@/styles/pages/AdminList.module.css";
 
@@ -16,6 +18,8 @@ export const getServerSideProps = withStaff(async ({ query }, { supabase }) => {
   const status = ENQUIRY_STATUS_OPTIONS.some((o) => o.value === query.status) ? query.status : "";
   const openId = typeof query.open === "string" ? query.open : null;
   try {
+    // Settings → Enquiries housekeeping (auto-close, retention) before listing.
+    await applyEnquiryHousekeeping(getAdminClient(), await getSetting(supabase, "enquiries"));
     // Runs as the signed-in staff member: RLS returns enquiries only to staff.
     const [enquiries, totals] = await Promise.all([
       listEnquiries(supabase, { status: status || undefined }),

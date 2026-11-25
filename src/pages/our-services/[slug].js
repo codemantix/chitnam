@@ -10,6 +10,7 @@ import { ROUTES } from "@/constants/routes";
 import { getServiceBySlug, services } from "@/data/services";
 import { crumbs } from "@/utils/breadcrumbs";
 import { breadcrumbSchema, faqSchema, serviceSchema } from "@/utils/schema";
+import { withSiteSettings } from "@/lib/withSiteSettings";
 
 // Maps a service to the topic pre-selected on the Apply form (Phase 4).
 const INTEREST = {
@@ -26,7 +27,7 @@ export async function getStaticPaths() {
   };
 }
 
-export async function getStaticProps({ params }) {
+async function loadPageProps({ params }) {
   const service = getServiceBySlug(params.slug);
   if (!service) return { notFound: true };
 
@@ -39,6 +40,9 @@ export async function getStaticProps({ params }) {
     },
   };
 }
+
+// Adds the business details from /admin/settings/ (header, footer, contact blocks).
+export const getStaticProps = withSiteSettings(loadPageProps);
 
 export default function ServicePage({ service, related }) {
   const path = ROUTES.service(service.slug);

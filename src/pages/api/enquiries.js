@@ -2,6 +2,7 @@ import { ENQUIRY_LIMITS } from "@/constants/enquiry";
 import { allowMethods, getClientIp, hashIp, isSameOrigin, sendError } from "@/lib/http";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { getAdminClient } from "@/lib/supabase/adminClient";
+import { getSetting } from "@/services/settings";
 import { insertEnquiry } from "@/services/enquiries";
 import { hasErrors, validateEnquiry } from "@/utils/validation";
 
@@ -37,17 +38,19 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true });
   }
 
-  // --- Validation ---------------------------------------------------------
-  const source = body.source === "contact" ? "contact" : "apply";
-  const { data, errors } = validateEnquiry(body, source);
-  if (hasErrors(errors)) {
-    return sendError(res, 400, "Please correct the highlighted fields.", { errors });
-  }
-
   const admin = getAdminClient();
   if (!admin) {
     console.error("[enquiries] Supabase is not configured (URL / service-role key missing).");
     return sendError(res, 503, "Our enquiry form is temporarily unavailable. Please call or email us instead.");
+  }
+
+  // --- Validation ---------------------------------------------------------
+  const source = body.source === "contact" ? "contact" : "apply";
+  // Settings → Enquiries can make the phone number required on the contact form.
+  const { requirePhoneOnContact } = await getSetting(admin, "enquiries");
+  const { data, errors } = validateEnquiry(body, source, { requirePhone: requirePhoneOnContact });
+  if (hasErrors(errors)) {
+    return sendError(res, 400, "Please correct the highlighted fields.", { errors });
   }
 
   // --- Rate limit ---------------------------------------------------------

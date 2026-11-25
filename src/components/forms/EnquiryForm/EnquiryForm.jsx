@@ -33,13 +33,14 @@ const EMPTY = {
  * @param {"apply"|"contact"} [props.variant="apply"]
  * @param {object} [props.defaults] Pre-selected values, e.g. { interest: "visa" }.
  */
-export default function EnquiryForm({ variant = "apply", defaults = {} }) {
+export default function EnquiryForm({ variant = "apply", defaults = {}, requirePhone = false }) {
   const isApply = variant === "apply";
   const idPrefix = useId().replace(/:/g, "");
   const { values, errors, status, serverMessage, onChange, onSubmit, reset } = useEnquiryForm({
     source: variant,
     initialValues: { ...EMPTY, ...defaults },
     idPrefix,
+    requirePhone,
   });
   const successRef = useRef(null);
   const id = (name) => `${idPrefix}-${name}`;
@@ -103,7 +104,7 @@ export default function EnquiryForm({ variant = "apply", defaults = {} }) {
           label="Phone number"
           autoComplete="tel"
           inputMode="tel"
-          required={isApply}
+          required={isApply || requirePhone}
           hint={isApply ? "Include WhatsApp if you prefer we message you there." : undefined}
           value={values.phone}
           onChange={onChange}

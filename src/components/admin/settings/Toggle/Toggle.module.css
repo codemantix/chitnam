@@ -1,0 +1,54 @@
+.track {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 1.6rem;
+  background-color: #cfd5ca;
+  border-radius: 999px;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.on {
+  background-color: var(--brand-700);
+}
+
+.input {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.input:disabled {
+  cursor: not-allowed;
+}
+
+.input:focus-visible + .thumb {
+  outline: 3px solid rgb(23 177 86 / 0.35);
+  outline-offset: 2px;
+}
+
+.thumb {
+  position: absolute;
+  top: 0.2rem;
+  left: 0.2rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  background-color: #fff;
+  border-radius: 999px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.on .thumb {
+  transform: translateX(1.15rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thumb {
+    transition: none;
+  }
+}
